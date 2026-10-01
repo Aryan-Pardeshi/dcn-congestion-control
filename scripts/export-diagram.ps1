@@ -13,11 +13,12 @@ if (-not (Test-Path -LiteralPath $edge)) { throw "Edge not found at either Progr
 if (-not (Test-Path -LiteralPath $docs)) { New-Item -ItemType Directory -Path $docs | Out-Null }
 
 # viewBox aspect ratio -> height for 1920 wide
-[xml]$xml = Get-Content -LiteralPath $svg -Raw
-$vb = $xml.svg.viewBox -split '\s+'
-$w = [double]$vb[2]; $h = [double]$vb[3]
+$raw = Get-Content -LiteralPath $svg -Raw
+if ($raw -notmatch 'viewBox="([^"]+)"') { throw 'viewBox not found' }
+$vb = $Matches[1].Trim() -split '\s+'
+$vbW = [double]$vb[2]; $vbH = [double]$vb[3]
 $W = 1920
-$H = [int][Math]::Round($W * $h / $w)
+$H = [int][Math]::Round($W * $vbH / $vbW)
 
 $html = Join-Path $here '.diagram-export.html'
 $svgUri = 'file:///' + ($svg -replace '\\', '/')

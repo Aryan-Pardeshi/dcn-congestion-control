@@ -1,24 +1,37 @@
+import { createPortal } from 'react-dom'
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import Navbar from './components/Navbar'
+import QuizModal from './components/QuizModal'
+import SmoothScroll, { useSmoothScroll } from './components/SmoothScroll'
 import { QuizProvider, useQuiz } from './components/QuizContext'
+import useSpotlight from './components/anim/useSpotlight'
 import Landing from './pages/Landing'
 import Simulator from './pages/Simulator'
+
+const pageVariants = {
+  initial: { opacity: 0, y: 10, filter: 'blur(6px)' },
+  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } },
+  exit: { opacity: 0, y: -6, filter: 'blur(4px)' },
+}
 
 function Shell() {
   const location = useLocation()
   const { open } = useQuiz()
+  const { resetScroll } = useSmoothScroll()
+  useSpotlight()
 
   return (
     <>
       <Navbar />
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" onExitComplete={resetScroll}>
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 8 }}
-          transition={{ duration: 0.25 }}
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         >
           <Routes location={location}>
             <Route path="/" element={<Landing />} />
@@ -26,16 +39,19 @@ function Shell() {
           </Routes>
         </motion.div>
       </AnimatePresence>
-      {/* TODO(T6): render <QuizModal/> */}
-      {open && <div data-quiz-placeholder />}
+      {createPortal(<AnimatePresence>{open && <QuizModal key="quiz" />}</AnimatePresence>, document.body)}
     </>
   )
 }
 
 export default function App() {
   return (
-    <QuizProvider>
-      <Shell />
-    </QuizProvider>
+    <MotionConfig reducedMotion="user">
+      <SmoothScroll>
+        <QuizProvider>
+          <Shell />
+        </QuizProvider>
+      </SmoothScroll>
+    </MotionConfig>
   )
 }

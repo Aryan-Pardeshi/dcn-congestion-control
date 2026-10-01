@@ -1,11 +1,25 @@
+import { Link } from 'react-router-dom'
+import { useQuiz } from './QuizContext'
 import './Footer.css'
 
-export default function Footer({ children }) {
+/* Minimal footer. Owns its own quiz button, so pages need not pass children. */
+export default function Footer() {
+  const { openQuiz } = useQuiz()
   return (
     <footer className="footer">
       <div className="wrap footer-inner">
-        <p>Data Communication &amp; Networks lab — Module 4.2, The Network Layer in the Internet</p>
-        {children}
+        <div className="footer-brand">
+          <p className="footer-name">Congestion Control Lab</p>
+          <p className="footer-text">Data Communication &amp; Networks lab — Module 4.2, The Network Layer in the Internet</p>
+        </div>
+        <div className="footer-actions">
+          <Link className="footer-link" to="/simulator">
+            Simulator
+          </Link>
+          <button type="button" className="btn-ghost" onClick={openQuiz}>
+            Take the quiz
+          </button>
+        </div>
       </div>
     </footer>
   )

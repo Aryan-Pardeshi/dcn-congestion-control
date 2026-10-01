@@ -1,13 +1,42 @@
 .footer {
   border-top: 1px solid var(--line);
-  margin-top: var(--s-8);
-  padding: var(--s-5) 0;
+  margin-top: var(--s-9);
+  padding: var(--s-6) 0 var(--s-7);
   color: var(--ink-dim);
-  font-size: var(--fs-0);
+  font-size: 0.875rem;
 }
 
 .footer-inner {
   display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s-5);
+}
+
+.footer-name {
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.footer-text {
+  max-width: 52ch;
+}
+
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.footer-link {
+  text-decoration: none;
+  color: var(--ink-dim);
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: var(--ink);
 }
