@@ -97,6 +97,8 @@
   gap: 16px;
   align-items: start;
   grid-template-columns: 300px minmax(0, 1fr) 320px;
+  /* Tall side columns would otherwise stretch both rows and open a gap under the stage. */
+  grid-template-rows: auto 1fr;
   grid-template-areas:
     'controls stage side'
     'controls charts side';
@@ -139,6 +141,7 @@
 @media (min-width: 900px) and (max-width: 1279.98px) {
   .sim-grid {
     grid-template-columns: 300px minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
     grid-template-areas:
       'controls stage'
       'controls charts'
@@ -152,6 +155,7 @@
   .sim { padding-top: 20px; padding-bottom: 96px; }
   .sim-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
     grid-template-areas:
       'stage'
       'controls'
