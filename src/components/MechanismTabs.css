@@ -1,0 +1,177 @@
+.mech {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--bg-2);
+}
+
+.mech-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.mech-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-1);
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--s-2) var(--s-3);
+  font-family: inherit;
+  font-size: var(--fs-0);
+  cursor: pointer;
+}
+
+.mech-tab.is-active {
+  border-color: var(--flow);
+  background: var(--bg-3);
+}
+
+.mech-tab-name {
+  font-weight: 650;
+}
+
+.mech-badge {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  border: 1px solid currentcolor;
+  border-radius: var(--r-sm);
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+.mech-badge-shaping {
+  color: var(--token);
+}
+
+.mech-badge-feedback {
+  color: var(--warn);
+}
+
+.mech-badge-aqm {
+  color: var(--flow);
+}
+
+.mech-panel {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: var(--s-5);
+  padding: var(--s-5);
+  animation: mech-in 0.25s ease;
+}
+
+@keyframes mech-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.mech-summary {
+  font-size: var(--fs-1);
+  max-width: 62ch;
+}
+
+.mech-meta {
+  display: grid;
+  gap: var(--s-1);
+  margin: var(--s-4) 0;
+  border-top: 1px solid var(--line);
+}
+
+.mech-meta > div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mech-meta dt {
+  color: var(--ink-dim);
+  font-size: var(--fs-0);
+}
+
+.mech-meta dd {
+  margin: 0;
+}
+
+.mech-info h4 {
+  margin: var(--s-4) 0 var(--s-2);
+  font-size: var(--fs-1);
+}
+
+.mech-steps {
+  padding-left: 1.4rem;
+  display: grid;
+  gap: var(--s-1);
+}
+
+.mech-formula {
+  margin-top: var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  padding: var(--s-3);
+  font-size: var(--fs-0);
+  overflow-x: auto;
+}
+
+.mech-pseudo {
+  margin-top: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  padding: var(--s-3);
+  font-size: var(--fs-0);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.mech-proscons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-4);
+}
+
+.mech-proscons ul {
+  padding-left: 1.2rem;
+  display: grid;
+  gap: var(--s-1);
+  color: var(--ink-dim);
+}
+
+.mech-anim {
+  align-self: start;
+  position: sticky;
+  top: 76px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  padding: var(--s-3);
+}
+
+.mech-anim svg {
+  height: auto;
+}
+
+@media (max-width: 900px) {
+  .mech-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .mech-anim {
+    position: static;
+  }
+
+  .mech-proscons {
+    grid-template-columns: 1fr;
+  }
+}

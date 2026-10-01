@@ -1,0 +1,12 @@
+.hero-topo {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--bg-2);
+  padding: var(--s-4);
+  box-shadow: var(--shadow);
+}
+
+.hero-topo svg {
+  width: 100%;
+  height: auto;
+}

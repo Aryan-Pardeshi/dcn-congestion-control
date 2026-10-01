@@ -39,7 +39,9 @@ function mergeConfig(user = {}) {
 
 export function createSimulation(userConfig = {}) {
   const config = mergeConfig(userConfig);
+  // Separate streams: traffic stays identical across mechanisms even when an algorithm draws random numbers.
   const rng = mulberry32(config.seed);
+  const algoRng = mulberry32((config.seed ^ 0x9e3779b9) >>> 0);
   const algo = ALGORITHMS[config.algorithm] ?? ALGORITHMS.none;
   const algoState = algo.createState(config.params[algo.id] ?? {});
 
@@ -54,6 +56,7 @@ export function createSimulation(userConfig = {}) {
     config,
     tick: 0,
     rng,
+    algoRng,
     queue: [],
     sources,
     algo,
@@ -103,7 +106,7 @@ export function step(sim) {
     tick,
     bufferSize: config.bufferSize,
     linkCapacity: config.linkCapacity,
-    rng: sim.rng,
+    rng: sim.algoRng,
     sources: sim.sources,
     emit,
     queueLength: sim.queue.length,
