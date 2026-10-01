@@ -1,19 +1,27 @@
+/* Vercel-inspired design tokens. Variable NAMES are a stable contract used across the app — change values, not names. */
 :root, [data-theme="dark"] {
-  --bg: #0E2236;
-  --bg-2: #13304A;
-  --bg-3: #1A3D5C;
-  --line: #2C5072;
-  --ink: #E6EEF5;
-  --ink-dim: #93A9BE;
-  --flow: #4FD1C5;
-  --warn: #F5B841;
-  --drop: #F2545B;
-  --token: #B69CFF;
-  --grid: rgba(147, 169, 190, 0.07);
-  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(3, 12, 22, 0.45);
+  --bg: #000000;          /* page */
+  --bg-2: #0A0A0A;        /* panels / cards */
+  --bg-3: #141414;        /* raised / hover */
+  --line: rgba(255, 255, 255, 0.10);   /* hairline borders */
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --ink: #EDEDED;         /* main text */
+  --ink-dim: #A1A1A1;     /* secondary text */
+  --ink-faint: #666666;   /* tertiary text */
+  --flow: #52A8FF;        /* healthy flow / primary accent (Vercel blue) */
+  --warn: #F5A524;        /* queue warning, choke packets */
+  --drop: #FF4D4F;        /* drops, overflow */
+  --token: #A78BFA;       /* tokens */
+  --ok: #45DEC4;          /* stable / success */
+  --grid: rgba(255, 255, 255, 0.045);
+  --glow: rgba(82, 168, 255, 0.35);
+  --shadow: 0 0 0 1px var(--line), 0 8px 30px rgba(0, 0, 0, 0.6);
+  --btn-bg: #EDEDED;      /* primary button (inverted, Vercel style) */
+  --btn-ink: #0A0A0A;
+  color-scheme: dark;
 
-  --font-sans: "Archivo", system-ui, sans-serif;
-  --font-mono: "Martian Mono", ui-monospace, monospace;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
 
   --fs-0: 0.875rem;
   --fs-1: 1rem;
@@ -21,7 +29,7 @@
   --fs-3: 1.563rem;
   --fs-4: 1.953rem;
   --fs-5: 2.441rem;
-  --fs-6: 3.815rem;
+  --fs-6: clamp(2.6rem, 6vw, 4.5rem);
 
   --s-1: 4px;
   --s-2: 8px;
@@ -31,23 +39,34 @@
   --s-6: 32px;
   --s-7: 48px;
   --s-8: 64px;
+  --s-9: 96px;
 
-  --r-sm: 4px;
+  --r-sm: 6px;
   --r-md: 8px;
-  --r-lg: 14px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="light"] {
-  --bg: #EEF3F7;
-  --bg-2: #FFFFFF;
-  --bg-3: #E2EBF2;
-  --line: #B9CCDC;
-  --ink: #12304D;
-  --ink-dim: #4E6A84;
-  --flow: #0F9488;
-  --warn: #B7791F;
-  --drop: #D13B42;
-  --token: #6D4FD8;
-  --grid: rgba(18, 48, 77, 0.06);
-  --shadow: 0 8px 24px rgba(18, 48, 77, 0.10);
+  --bg: #FFFFFF;
+  --bg-2: #FAFAFA;
+  --bg-3: #F2F2F2;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.16);
+  --ink: #171717;
+  --ink-dim: #666666;
+  --ink-faint: #8F8F8F;
+  --flow: #0070F3;
+  --warn: #C27803;
+  --drop: #E5484D;
+  --token: #7C3AED;
+  --ok: #0E9F86;
+  --grid: rgba(0, 0, 0, 0.04);
+  --glow: rgba(0, 112, 243, 0.25);
+  --shadow: 0 0 0 1px var(--line), 0 8px 30px rgba(0, 0, 0, 0.08);
+  --btn-bg: #171717;
+  --btn-ink: #FFFFFF;
+  color-scheme: light;
 }
