@@ -32,25 +32,21 @@ export const problemStatement = {
 
 export const resources = {
   hardware: [
-    'PC / laptop with 4 GB RAM or more',
-    'Any modern display (simulator is responsive down to mobile width)',
+    'PC or laptop, 4 GB RAM',
+    'Any display',
   ],
   software: [
-    'Windows / Linux / macOS',
-    'Node.js 18 or later with npm',
-    'Vite (build tool and dev server)',
-    'React 19 with React Router',
-    'Framer Motion (UI animation)',
-    'HTML5 Canvas (packet animation and charts)',
-    'Vitest (unit tests for the simulation engine)',
-    'Google Chrome / Microsoft Edge',
-    'Visual Studio Code',
+    'Node.js 18+ and npm',
+    'Vite + React 19',
+    'HTML5 Canvas',
+    'Chrome or Edge',
+    'VS Code',
   ],
   references: [
-    'Andrew S. Tanenbaum, David J. Wetherall — Computer Networks, 5th ed., Pearson (Chapter 5: The Network Layer, Congestion control algorithms)',
-    'Behrouz A. Forouzan — Data Communications and Networking, 5th ed., McGraw-Hill (Congestion control and quality of service)',
-    'S. Floyd and V. Jacobson — "Random Early Detection Gateways for Congestion Avoidance", IEEE/ACM Transactions on Networking, 1993',
-    'RFC 2309 — Recommendations on Queue Management and Congestion Avoidance in the Internet',
+    'Tanenbaum — Computer Networks, 5th ed., Ch. 5',
+    'Forouzan — Data Communications and Networking, 5th ed.',
+    'Floyd and Jacobson — Random Early Detection Gateways, 1993',
+    'RFC 2309 — Queue management and congestion avoidance',
   ],
 };
 

@@ -8,8 +8,7 @@ import ControlPanel from '../sim/ControlPanel.jsx';
 import StatsPanel from '../sim/StatsPanel.jsx';
 import EventLog from '../sim/EventLog.jsx';
 import CompareView from '../sim/CompareView.jsx';
-import { AnimatedNumber, Icon, StatusPill } from '../sim/ui.jsx';
-import { ALGORITHMS } from '../sim/algorithms/index.js';
+import { AnimatedNumber, Icon } from '../sim/ui.jsx';
 import { useQuiz } from '../components/QuizContext.jsx';
 import './Simulator.css';
 
@@ -19,13 +18,6 @@ const INFO = {
   token: 'Tokens accumulate while sources are quiet, so a burst up to C packets passes at once.',
   choke: 'When the R1 queue crosses the threshold it sends a choke packet, and the source cuts its rate.',
   red: 'RED drops a few packets early as the average queue rises, keeping delay low.',
-};
-
-const CAT_TONE = {
-  Baseline: 'base',
-  'Traffic shaping': 'shape',
-  'Feedback congestion control': 'feedback',
-  'Active queue management': 'aqm',
 };
 
 const int = (v) => Math.round(v).toLocaleString('en-US');
@@ -100,7 +92,6 @@ export default function Simulator() {
   const sim = useSimulation();
   const { snapshot, config } = sim;
   const { openQuiz } = useQuiz();
-  const algo = ALGORITHMS[config.algorithm];
   useShortcuts(sim);
 
   const hist = snapshot.history || [];
@@ -131,13 +122,6 @@ export default function Simulator() {
               <p>Three campus labs share one gateway router and one bottleneck link to the server.</p>
             </div>
             <div className="sim-head-actions">
-              <span className="pill-mech" title={algo?.short}>
-                <span className="pill-mech-name">{algo?.name}</span>
-                <span className={`cat cat-${CAT_TONE[algo?.category]}`}>{algo?.category}</span>
-              </span>
-              <StatusPill tone={sim.running ? 'flow' : 'idle'} pulse={sim.running}>
-                {sim.running ? 'Running' : 'Paused'}
-              </StatusPill>
               <button type="button" className="btn-ghost quiz-btn" onClick={openQuiz}>Take the quiz</button>
             </div>
           </motion.header>

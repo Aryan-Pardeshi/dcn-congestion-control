@@ -208,14 +208,9 @@
 }
 
 .sec-num {
-  display: inline-grid;
-  place-items: center;
-  height: 24px;
-  padding: 0 8px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  color: var(--ink-dim);
-  font-size: 0.72rem;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .sub-head {

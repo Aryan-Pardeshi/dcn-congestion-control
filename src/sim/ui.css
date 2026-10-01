@@ -147,10 +147,6 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 3px 10px 3px 9px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--tone) 32%, transparent);
-  background: color-mix(in srgb, var(--tone) 10%, transparent);
   color: var(--tone);
   font-size: 0.75rem;
   font-weight: 500;

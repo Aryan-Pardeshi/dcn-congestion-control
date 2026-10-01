@@ -126,11 +126,6 @@ export function Icon({ name, size = 14 }) {
   }
 }
 
-export function StatusPill({ tone = 'ok', pulse = false, children }) {
-  return (
-    <span className={`pill pill-${tone}`}>
-      <i className={`pill-dot${pulse ? ' pulse' : ''}`} aria-hidden="true" />
-      {children}
-    </span>
-  );
+export function StatusPill({ tone = 'ok', children }) {
+  return <span className={`pill pill-${tone}`}>{children}</span>;
 }

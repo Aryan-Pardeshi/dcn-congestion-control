@@ -11,10 +11,6 @@ export default function AnimFrame({ title, legend = [], caption, children }) {
           <i />
         </span>
         <span className="mono anim-title">{title}</span>
-        <span className="anim-live">
-          <span className="badge-dot" aria-hidden="true" />
-          live
-        </span>
       </div>
       <div className="anim-stage">{children}</div>
       <figcaption className="anim-foot">

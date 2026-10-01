@@ -114,10 +114,6 @@ export default function Landing() {
         <div className="grid-bg" aria-hidden="true" />
         <div className="glow-bg hero-glow" aria-hidden="true" />
         <div className="wrap hero-inner">
-          <motion.p className="badge hero-badge" {...heroMotion(0, 8)}>
-            <span className="badge-dot" aria-hidden="true" />
-            Module 4.2 — The Network Layer in the Internet
-          </motion.p>
           <h1 id="hero-title" className="hero-title" aria-label="Congestion control algorithms">
             {HERO_WORDS.map((w, i) => (
               <motion.span

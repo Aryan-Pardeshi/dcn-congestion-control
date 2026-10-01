@@ -133,10 +133,6 @@ export default function HeroTopology() {
           <i />
         </span>
         <span className="mono hero-window-title">r1-gateway — live</span>
-        <span className="hero-window-live">
-          <span className="badge-dot" aria-hidden="true" />
-          running
-        </span>
       </div>
       <div className="hero-window-body">
         <svg
