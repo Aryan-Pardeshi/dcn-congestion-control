@@ -11,11 +11,28 @@
 }
 
 .compare-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 1.125rem;
   font-weight: 650;
   font-variation-settings: normal;
   letter-spacing: -0.015em;
   margin-bottom: 4px;
+}
+.compare-actions .hint { display: inline-flex; }
+.compare-table .col-type {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  text-align: left;
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+}
+.compare-table thead .col-type {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  background: var(--bg-2);
 }
 
 .compare-sub { font-size: 0.8125rem; color: var(--ink-dim); max-width: 56ch; line-height: 1.5; }

@@ -71,7 +71,7 @@ function niceMax(v) {
  * series: [{ label, color: '--flow', values: number[], area?: boolean, width?: number }]
  * refs:   [{ value, label, color, dashed? }]   labels sit at the left, inside the plot
  */
-export default function LiveChart({ title, hint, series, yMax, refs = [], endTick = 0, height = 176, decimals = 1 }) {
+export default function LiveChart({ title, hint, tip, series, yMax, refs = [], endTick = 0, height = 176, decimals = 1 }) {
   const canvasRef = useRef(null);
   const wrapRef = useRef(null);
   const propsRef = useRef({});
@@ -83,6 +83,8 @@ export default function LiveChart({ title, hint, series, yMax, refs = [], endTic
   useEffect(() => { dirtyRef.current = true; });
 
   const onMove = useCallback((e) => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) return;
+    if (e.pointerType === 'touch') return;
     const rect = canvasRef.current.getBoundingClientRect();
     hoverRef.current = { x: e.clientX - rect.left };
     dirtyRef.current = true;
@@ -146,11 +148,11 @@ export default function LiveChart({ title, hint, series, yMax, refs = [], endTic
       const inkFaint = colorOf('--ink-faint');
       const lineC = colorOf('--line');
 
-      // grid + y labels
-      ctx.font = `10px ${MONO}`;
+      // grid + y labels (3 ticks, large readable labels)
+      ctx.font = `12px ${MONO}`;
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 1;
-      const steps = 4;
+      const steps = 3;
       for (let i = 0; i <= steps; i += 1) {
         const y = Math.round(padT + ih - (ih * i) / steps) + 0.5;
         ctx.strokeStyle = lineC;
@@ -209,7 +211,7 @@ export default function LiveChart({ title, hint, series, yMax, refs = [], endTic
           if (ly < padT + 5) ly = y + 8;
           while (placed.some((p) => Math.abs(p - ly) < 11) && ly < padT + ih - 4) ly += 11;
           placed.push(ly);
-          ctx.font = `500 10px ${MONO}`;
+          ctx.font = `500 12px ${MONO}`;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'middle';
           const tw = ctx.measureText(r.label).width;
@@ -239,7 +241,7 @@ export default function LiveChart({ title, hint, series, yMax, refs = [], endTic
         .map(({ s, pts }) => ({ s, p: pts[pts.length - 1], y: pts[pts.length - 1].y }))
         .sort((a, b) => a.y - b.y);
       for (let i = 1; i < lasts.length; i += 1) if (lasts[i].y - lasts[i - 1].y < 11) lasts[i].y = lasts[i - 1].y + 11;
-      ctx.font = `500 10.5px ${MONO}`;
+      ctx.font = `500 12px ${MONO}`;
       ctx.textBaseline = 'middle';
       lasts.forEach(({ s, p, y }) => {
         const c = colorOf(s.color);
@@ -249,8 +251,9 @@ export default function LiveChart({ title, hint, series, yMax, refs = [], endTic
         ctx.fillText(Number(p.v).toFixed(dec), padL + iw + 8, y);
       });
 
-      // hover crosshair + tooltip
-      const hv = hoverRef.current;
+      // hover crosshair + tooltip (hidden on small screens to avoid clutter)
+      const smallScreen = typeof window !== 'undefined' && window.innerWidth < 640;
+      const hv = smallScreen ? null : hoverRef.current;
       if (hv && len > 1) {
         const idx = clamp(Math.round(((hv.x - padL) / iw) * (WINDOW - 1)), 0, len - 1);
         const x = xOf(idx);
@@ -282,7 +285,7 @@ export default function LiveChart({ title, hint, series, yMax, refs = [], endTic
           ctx.fillText(l, bx + 8, by + 11 + i * 14);
         });
       }
-      ctx.font = `10px ${SANS}`;
+      ctx.font = `12px ${SANS}`;
     };
     raf = requestAnimationFrame(frame);
     return () => { cancelAnimationFrame(raf); mo.disconnect(); };
@@ -291,7 +294,7 @@ export default function LiveChart({ title, hint, series, yMax, refs = [], endTic
   return (
     <figure className="chart">
       <figcaption className="chart-head">
-        <span className="chart-title">{title}</span>
+        <span className="chart-title">{title} {tip}</span>
         {hint && <span className="chart-hint mono">{hint}</span>}
       </figcaption>
       <div ref={wrapRef} className="chart-body">

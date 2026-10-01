@@ -21,6 +21,9 @@
   letter-spacing: 0;
   color: var(--ink-dim);
   line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .cp-hint {
@@ -135,17 +138,85 @@
 .burst:hover { background: color-mix(in srgb, var(--warn) 14%, transparent); border-color: color-mix(in srgb, var(--warn) 60%, transparent); }
 .burst:active { transform: scale(0.98); }
 
-.shortcuts {
-  list-style: none;
+.cp-label-row2 {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  margin: 14px 0 0;
-  padding: 0;
-  font-size: 0.6875rem;
-  color: var(--ink-faint);
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 12px 0 2px;
 }
-.shortcuts li { display: inline-flex; align-items: center; gap: 6px; }
+.cp-label-row2 .cp-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--ink);
+}
+
+/* hint wrappers stretch to the control they describe */
+.cp .hint { display: block; }
+.cp .hint > .btn, .cp .hint > .btn-ghost, .cp .hint > .seg { width: 100%; }
+.run-row .hint { min-width: 0; }
+.run-row .hint > .btn, .run-row .hint > .btn-ghost { width: 100%; }
+.mopt-list .hint { display: block; }
+.mopt-list .hint .mopt { width: 100%; }
+.seed-row { align-items: stretch; }
+.seed-row .hint:first-child { flex: 1 1 0; display: flex; min-width: 0; }
+.seed-row .hint .seed-input { width: 100%; }
+.adv .hint { display: block; }
+.adv .hint > .adv-head { width: 100%; }
+
+/* advanced settings collapsible */
+.adv { padding: 0; }
+.adv-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.adv-title { line-height: 1.3; }
+.adv-chev { color: var(--ink-dim); transition: transform 0.2s ease; flex: none; }
+.adv-chev.open { transform: rotate(180deg); }
+.adv-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.adv-body.open { grid-template-rows: 1fr; }
+.adv-inner {
+  overflow: hidden;
+  min-height: 0;
+  padding: 0 16px;
+}
+.adv-body.open .adv-inner { padding-bottom: 16px; }
+.adv-group + .adv-group {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.adv-h {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-dim);
+  margin-bottom: 10px;
+}
+.param + .param { margin-top: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .adv-body { transition: none; }
+  .adv-chev { transition: none; }
+}
 .sim .kbd {
   display: inline-grid;
   place-items: center;

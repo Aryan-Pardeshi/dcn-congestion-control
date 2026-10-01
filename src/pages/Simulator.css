@@ -193,6 +193,71 @@
   color: var(--ink-dim);
 }
 
+.narration { color: var(--ink); }
+
+.canvas-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--bg-2);
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+}
+.canvas-legend .lg { display: inline-flex; align-items: center; gap: 6px; }
+.canvas-legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-flow { background: var(--flow); }
+.dot-drop { background: var(--drop); }
+.dot-token { background: var(--token); }
+.canvas-legend .dia {
+  width: 9px;
+  height: 9px;
+  display: inline-block;
+  background: var(--warn);
+  transform: rotate(45deg);
+  border-radius: 1.5px;
+}
+
+.charts-single { grid-template-columns: minmax(0, 1fr); }
+.charts-extra { margin-top: 16px; }
+.chart-cap {
+  margin: 8px 2px 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+.chart-toggle {
+  background: none;
+  border: 0;
+  padding: 8px 2px 0;
+  color: var(--ink-dim);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-align: left;
+}
+.chart-toggle:hover { color: var(--ink); }
+
+.guide-link {
+  background: none;
+  border: 0;
+  padding: 5px 8px;
+  color: var(--ink-dim);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.guide-link:hover { color: var(--ink); }
+
+.runbar .hint { display: contents; }
+
 .info-counters { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .counter {

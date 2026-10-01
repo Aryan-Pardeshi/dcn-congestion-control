@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { useSimulation } from '../sim/useSimulation.js';
@@ -8,17 +8,13 @@ import ControlPanel from '../sim/ControlPanel.jsx';
 import StatsPanel from '../sim/StatsPanel.jsx';
 import EventLog from '../sim/EventLog.jsx';
 import CompareView from '../sim/CompareView.jsx';
+import QuickStart, { loadQuickstart, saveQuickstartDismissed, clearQuickstartDismissed } from '../sim/QuickStart.jsx';
+import { Hint } from '../sim/InfoTip.jsx';
+import { InfoTip } from '../sim/InfoTip.jsx';
+import { HELP } from '../sim/help.js';
 import { AnimatedNumber, Icon } from '../sim/ui.jsx';
 import { useQuiz } from '../components/QuizContext.jsx';
 import './Simulator.css';
-
-const INFO = {
-  none: 'Watch the buffer fill to the brim and packets drop at the tail.',
-  leaky: 'Bursty arrivals enter the bucket, but packets leave toward R1 at a steady rate r.',
-  token: 'Tokens accumulate while sources are quiet, so a burst up to C packets passes at once.',
-  choke: 'When the R1 queue crosses the threshold it sends a choke packet, and the source cuts its rate.',
-  red: 'RED drops a few packets early as the average queue rises, keeping delay low.',
-};
 
 const int = (v) => Math.round(v).toLocaleString('en-US');
 
@@ -66,17 +62,55 @@ function Counters({ snapshot }) {
   );
 }
 
+/** One plain-English sentence describing the current state. */
+export function narrationFor(snapshot, config) {
+  const tick = snapshot.tick;
+  const q = snapshot.queueLength;
+  const buf = Math.max(1, snapshot.bufferSize);
+  const pct = Math.round((q / buf) * 100);
+  const hist = snapshot.history || [];
+  const last = hist[hist.length - 1];
+  const lostStep = last?.dropped ?? 0;
+  const algo = config.algorithm;
+
+  if (algo === 'choke') {
+    const evts = snapshot.events || [];
+    const recent = [...evts].reverse().find((e) => e.type === 'choke' && tick - e.tick <= 4);
+    if (recent) {
+      const m = /S(\d)/.exec(recent.text || '');
+      const who = m ? `S${m[1]}` : 'a source';
+      return `t = ${tick} — R1 sent a choke message to ${who}; ${who} is now sending more slowly.`;
+    }
+  }
+  if (algo === 'leaky') {
+    const r = config.params?.leaky?.leakRate;
+    return `t = ${tick} — The bucket releases packets at a steady ${r} per step. R1 queue is ${pct}% full.`;
+  }
+  if (lostStep > 0) {
+    return `t = ${tick} — R1 queue is ${pct}% full. ${lostStep} packet${lostStep === 1 ? ' was' : 's were'} lost this step.`;
+  }
+  return `t = ${tick} — R1 queue is ${pct}% full. No packets lost this step.`;
+}
+
 function MobileRunBar({ running, toggle, stepOnce, reset, injectBurst }) {
   if (typeof document === 'undefined') return null;
   return createPortal(
     <div className="runbar" role="toolbar" aria-label="Playback controls">
-      <button type="button" className="btn runbar-main" onClick={toggle} aria-pressed={running}>
-        <Icon name={running ? 'pause' : 'play'} />
-        <span>{running ? 'Pause' : 'Play'}</span>
-      </button>
-      <button type="button" className="btn-ghost runbar-icon" onClick={stepOnce} aria-label="Step one tick"><Icon name="step" size={16} /></button>
-      <button type="button" className="btn-ghost runbar-icon" onClick={reset} aria-label="Reset"><Icon name="reset" size={16} /></button>
-      <button type="button" className="btn-ghost runbar-icon runbar-burst" onClick={() => injectBurst()} aria-label="Inject burst"><Icon name="bolt" size={16} /></button>
+      <Hint tip={running ? HELP.pause : HELP.play} thing={running ? 'pause' : 'play'}>
+        <button type="button" className="btn runbar-main" onClick={toggle} aria-pressed={running}>
+          <Icon name={running ? 'pause' : 'play'} />
+          <span>{running ? 'Pause' : 'Play'}</span>
+        </button>
+      </Hint>
+      <Hint tip={HELP.step} thing="step">
+        <button type="button" className="btn-ghost runbar-icon" onClick={stepOnce} aria-label="Step one tick"><Icon name="step" size={16} /></button>
+      </Hint>
+      <Hint tip={HELP.reset} thing="reset">
+        <button type="button" className="btn-ghost runbar-icon" onClick={reset} aria-label="Reset"><Icon name="reset" size={16} /></button>
+      </Hint>
+      <Hint tip={HELP.burst} thing="inject burst">
+        <button type="button" className="btn-ghost runbar-icon runbar-burst" onClick={() => injectBurst()} aria-label="Inject burst"><Icon name="bolt" size={16} /></button>
+      </Hint>
     </div>,
     document.body,
   );
@@ -93,6 +127,23 @@ export default function Simulator() {
   const { snapshot, config } = sim;
   const { openQuiz } = useQuiz();
   useShortcuts(sim);
+  const [guideOpen, setGuideOpen] = useState(loadQuickstart);
+  const [moreCharts, setMoreCharts] = useState(false);
+
+  const closeGuide = () => {
+    saveQuickstartDismissed();
+    setGuideOpen(false);
+  };
+  const reopenGuide = () => {
+    clearQuickstartDismissed();
+    setGuideOpen(true);
+  };
+  const startWithNone = () => {
+    sim.setConfig({ algorithm: 'none' });
+    saveQuickstartDismissed();
+    setGuideOpen(false);
+    sim.play();
+  };
 
   const hist = snapshot.history || [];
   const q = hist.map((h) => h.queue);
@@ -100,17 +151,16 @@ export default function Simulator() {
   const offered = hist.map((h) => h.offered);
   const dropped = hist.map((h) => h.dropped);
 
-  const queueRefs = [{ value: config.bufferSize, label: `buffer ${config.bufferSize}`, color: '--ink-dim' }];
+  const queueRefs = [{ value: config.bufferSize, label: 'buffer full', color: '--ink-dim' }];
   if (config.algorithm === 'red') {
     queueRefs.push(
-      { value: config.params.red.minTh, label: `min ${config.params.red.minTh}`, color: '--warn' },
-      { value: config.params.red.maxTh, label: `max ${config.params.red.maxTh}`, color: '--drop' },
+      { value: config.params.red.minTh, label: 'RED starts dropping', color: '--warn' },
+      { value: config.params.red.maxTh, label: 'RED drops everything', color: '--drop' },
     );
   }
-  const queueSeries = [{ label: 'queue', color: '--flow', values: q, area: true }];
-  if (config.algorithm === 'red') {
-    queueSeries.push({ label: 'avg (RED)', color: '--token', values: hist.map((h) => h.avgRed ?? 0), width: 1.4 });
-  }
+  const queueSeries = [{ label: 'Queue', color: '--flow', values: q, area: true }];
+
+  const narration = narrationFor(snapshot, config);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -122,9 +172,12 @@ export default function Simulator() {
               <p>Three campus labs share one gateway router and one bottleneck link to the server.</p>
             </div>
             <div className="sim-head-actions">
+              <button type="button" className="guide-link" onClick={reopenGuide}>How to use</button>
               <button type="button" className="btn-ghost quiz-btn" onClick={openQuiz}>Take the quiz</button>
             </div>
           </motion.header>
+
+          {guideOpen && <QuickStart onClose={closeGuide} onStart={startWithNone} />}
 
           <div className="sim-grid">
             <motion.aside className="sim-controls panel" aria-label="Simulation controls" data-lenis-prevent {...rise(1)}>
@@ -140,44 +193,58 @@ export default function Simulator() {
               <div className="info">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.p
-                    key={config.algorithm}
-                    className="info-text"
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    key={narration}
+                    className="info-text narration"
+                    initial={{ opacity: 0.3 }}
+                    animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.18 }}
                   >
-                    {INFO[config.algorithm]}
+                    {narration}
                   </motion.p>
                 </AnimatePresence>
                 <Counters snapshot={snapshot} />
               </div>
+              <div className="canvas-legend" aria-label="Diagram legend">
+                <span className="lg"><i className="dot dot-flow" /> packet</span>
+                <span className="lg"><i className="dot dot-drop" /> lost packet</span>
+                <span className="lg"><i className="dia" /> choke message</span>
+                {config.algorithm === 'token' && <span className="lg"><i className="dot dot-token" /> token</span>}
+              </div>
             </motion.section>
 
             <motion.section className="sim-charts" aria-label="Live charts" {...rise(3)}>
-              <div className="charts-grid">
+              <div className="charts-grid charts-single">
               <LiveChart
-                title="Queue length"
-                hint="packets in the R1 buffer"
+                title="Router queue over time"
+                tip={<InfoTip tip={HELP.chartQueue} thing="router queue chart" />}
                 series={queueSeries}
                 yMax={Math.max(config.bufferSize, 1)}
                 refs={queueRefs}
                 endTick={snapshot.tick}
-                decimals={config.algorithm === 'red' ? 1 : 0}
+                decimals={0}
               />
+              </div>
+              <p className="chart-cap">When the line touches the dashed top line, the router is full and packets are lost.</p>
+              <button type="button" className="chart-toggle" onClick={() => setMoreCharts((v) => !v)} aria-expanded={moreCharts}>
+                {moreCharts ? 'Hide more charts' : 'Show more charts'}
+              </button>
+              {moreCharts && (
+              <div className="charts-grid charts-extra">
               <LiveChart
-                title="Throughput vs capacity"
-                hint="packets per tick"
+                title="Packets per step"
+                tip={<InfoTip tip={HELP.chartPackets} thing="packets per step chart" />}
                 series={[
-                  { label: 'delivered', color: '--flow', values: deliv, area: true },
-                  { label: 'offered', color: '--ink-dim', values: offered, width: 1.2 },
-                  { label: 'dropped', color: '--drop', values: dropped, width: 1.2 },
+                  { label: 'Delivered', color: '--flow', values: deliv, area: true },
+                  { label: 'Arriving', color: '--ink-dim', values: offered, width: 1.2 },
+                  { label: 'Lost', color: '--drop', values: dropped, width: 1.2 },
                 ]}
-                refs={[{ value: config.linkCapacity, label: `capacity ${config.linkCapacity}`, color: '--warn', legend: 'capacity' }]}
+                refs={[{ value: config.linkCapacity, label: 'Link capacity', color: '--warn', legend: 'Link capacity' }]}
                 endTick={snapshot.tick}
                 decimals={0}
               />
               </div>
+              )}
             </motion.section>
 
             <motion.aside className="sim-side" aria-label="Statistics and events" {...rise(4)}>

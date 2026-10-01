@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { compareAll } from './engine.js';
 import BarChart from './BarChart.jsx';
 import { Icon, Segmented } from './ui.jsx';
+import { InfoTip, Hint } from './InfoTip.jsx';
+import { HELP } from './help.js';
 import './CompareView.css';
 
 const CAT_COLOR = {
@@ -18,12 +20,12 @@ const TICK_OPTIONS = [300, 500, 1000].map((t) => ({ value: t, label: String(t) }
 // Only columns where "best" has a meaning. Generated is the same for every mechanism, so it is never highlighted.
 const COLUMNS = [
   { key: 'delivered', label: 'Delivered', dir: 'high', fmt: (r) => r.delivered },
-  { key: 'dropped', label: 'Dropped', dir: 'low', fmt: (r) => r.dropped },
-  { key: 'dropRate', label: 'Drop rate %', dir: 'low', fmt: (r) => (r.dropRate * 100).toFixed(1) },
+  { key: 'dropped', label: 'Lost', dir: 'low', fmt: (r) => r.dropped },
+  { key: 'dropRate', label: 'Lost %', dir: 'low', fmt: (r) => (r.dropRate * 100).toFixed(1) },
   { key: 'avgQueue', label: 'Avg queue', dir: 'low', fmt: (r) => r.avgQueue.toFixed(1) },
-  { key: 'avgDelay', label: 'Avg delay', dir: 'low', fmt: (r) => r.avgDelay.toFixed(2) },
+  { key: 'avgDelay', label: 'Avg wait', dir: 'low', fmt: (r) => r.avgDelay.toFixed(2) },
   { key: 'throughput', label: 'Throughput', dir: 'high', fmt: (r) => r.throughput.toFixed(2) },
-  { key: 'utilization', label: 'Utilisation %', dir: 'high', fmt: (r) => (r.utilization * 100).toFixed(1) },
+  { key: 'utilization', label: 'Link use %', dir: 'high', fmt: (r) => (r.utilization * 100).toFixed(1) },
 ];
 
 function bestIds(rows, key, dir) {
@@ -100,9 +102,10 @@ export default function CompareView({ config }) {
     <section className="compare panel" aria-label="Compare all mechanisms">
       <header className="compare-head">
         <div>
-          <h2 className="compare-title">Compare all mechanisms</h2>
+          <h2 className="compare-title">Compare all mechanisms <InfoTip tip={HELP.compare} thing="compare section" /></h2>
           <p className="compare-sub">
-            Runs every mechanism headlessly on identical traffic: same seed, sources, buffer and link as the simulator above.
+            Runs every mechanism on exactly the same traffic so you can see which loses fewer packets and which keeps the queue short.
+            Same seed, sources, buffer and link as the simulator above.
           </p>
         </div>
         <div className="compare-actions">
@@ -110,15 +113,19 @@ export default function CompareView({ config }) {
             <span className="compare-ticks-label">Ticks</span>
             <Segmented size="sm" options={TICK_OPTIONS} value={ticks} onChange={setTicks} ariaLabel="Number of ticks to simulate" />
           </div>
-          <button type="button" className="btn compare-run" onClick={run} disabled={busy}>
-            {busy ? <span className="spinner" aria-hidden="true" /> : <Icon name="play" />}
-            <span>{busy ? 'Running' : rows ? 'Run again' : 'Run comparison'}</span>
-          </button>
-          {rows && (
-            <button type="button" className="btn-ghost compare-dl" onClick={download}>
-              <Icon name="download" />
-              <span>Download CSV</span>
+          <Hint tip={HELP.runComparison} thing="run comparison">
+            <button type="button" className="btn compare-run" onClick={run} disabled={busy}>
+              {busy ? <span className="spinner" aria-hidden="true" /> : <Icon name="play" />}
+              <span>{busy ? 'Running' : rows ? 'Run again' : 'Run comparison'}</span>
             </button>
+          </Hint>
+          {rows && (
+            <Hint tip={HELP.downloadCsv} thing="download CSV">
+              <button type="button" className="btn-ghost compare-dl" onClick={download}>
+                <Icon name="download" />
+                <span>Download CSV</span>
+              </button>
+            </Hint>
           )}
         </div>
       </header>
@@ -139,10 +146,10 @@ export default function CompareView({ config }) {
         <div className={`compare-results${busy ? ' is-busy' : ''}`}>
           {stale && <p className="compare-stale">Settings changed since this run. Run again to refresh.</p>}
           <div className="bar-grid" key={result.run}>
-            <BarChart title="Drop rate" caption="lower is better" unit="%" rows={bar('dropRate', 100)} />
-            <BarChart title="Avg queue" caption="packets, lower is better" rows={bar('avgQueue')} delay={0.05} />
-            <BarChart title="Avg delay" caption="ticks, lower is better" decimals={2} rows={bar('avgDelay')} delay={0.1} />
-            <BarChart title="Throughput" caption="pkt/tick, higher is better" decimals={2} rows={bar('throughput')} delay={0.15} />
+            <BarChart title="Lost packets" caption="lower is better" unit="%" rows={bar('dropRate', 100)} tip={HELP.compareDropRate} />
+            <BarChart title="Avg queue" caption="packets, lower is better" rows={bar('avgQueue')} delay={0.05} tip={HELP.compareAvgQueue} />
+            <BarChart title="Avg wait" caption="steps, lower is better" decimals={2} rows={bar('avgDelay')} delay={0.1} tip={HELP.compareAvgDelay} />
+            <BarChart title="Throughput" caption="pkt/step, higher is better" decimals={2} rows={bar('throughput')} delay={0.15} tip={HELP.compareThroughput} />
           </div>
 
           <motion.p
@@ -160,7 +167,8 @@ export default function CompareView({ config }) {
               <thead>
                 <tr>
                   <th className="col-name">Mechanism</th>
-                  <th className="col-num">Generated</th>
+                  <th className="col-type">Type</th>
+                  <th className="col-num">Sent</th>
                   {COLUMNS.map((c) => <th key={c.key} className="col-num">{c.label}</th>)}
                 </tr>
               </thead>
@@ -175,12 +183,10 @@ export default function CompareView({ config }) {
                     <th scope="row" className="col-name">
                       <span className="mech-cell">
                         <i style={{ background: `var(${CAT_COLOR[r.category] || '--flow'})` }} />
-                        <span>
-                          <span className="mech-cell-name">{r.name}</span>
-                          <span className="mech-cell-cat">{r.category}</span>
-                        </span>
+                        <span className="mech-cell-name">{r.name}</span>
                       </span>
                     </th>
+                    <td className="col-type">{r.category}</td>
                     <td className="col-num">{r.generated}</td>
                     {COLUMNS.map((c) => (
                       <td key={c.key} className={`col-num${best[c.key]?.has(r.id) ? ' best' : ''}`}>{c.fmt(r)}</td>

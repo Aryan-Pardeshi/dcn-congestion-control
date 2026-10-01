@@ -15,7 +15,7 @@
   margin-bottom: 12px;
 }
 
-.bars-title { font-size: 0.8125rem; font-weight: 600; color: var(--ink); }
+.bars-title { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8125rem; font-weight: 600; color: var(--ink); }
 .bars-cap { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--ink-faint); }
 
 .bars-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
