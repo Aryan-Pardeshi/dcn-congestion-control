@@ -290,3 +290,11 @@
   .runbar-icon { padding: 9px 12px; border-radius: var(--r-md); }
   .runbar-burst { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
 }
+
+/* Footer sits below the content; on small screens the fixed run bar overlays
+   the bottom of the page, so reserve space equal to the bar height. */
+@media (max-width: 899.98px) {
+  .sim-footer-pad {
+    padding-bottom: 72px;
+  }
+}

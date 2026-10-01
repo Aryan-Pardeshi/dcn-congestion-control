@@ -1,6 +1,8 @@
+import { useCallback, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
+import LoadingOverlay from '@/components/ui/loading-overlay'
 import Navbar from './components/Navbar'
 import QuizModal from './components/QuizModal'
 import SmoothScroll, { useSmoothScroll } from './components/SmoothScroll'
@@ -45,11 +47,34 @@ function Shell() {
 }
 
 export default function App() {
+  // Show the preloader once per browser session; stays mounted so route changes don't retrigger it
+  // and so completing it never remounts Shell (LoadingOverlay keeps one stable wrapper element).
+  const [showPreloader] = useState(() => {
+    try {
+      return !sessionStorage.getItem('cc-lab-preloader-seen')
+    } catch {
+      return true
+    }
+  })
+  const handlePreloaderComplete = useCallback(() => {
+    try {
+      sessionStorage.setItem('cc-lab-preloader-seen', '1')
+    } catch {
+      /* storage unavailable — overlay simply shows again next load */
+    }
+  }, [])
+
   return (
     <MotionConfig reducedMotion="user">
       <SmoothScroll>
         <QuizProvider>
-          <Shell />
+          {showPreloader ? (
+            <LoadingOverlay onComplete={handlePreloaderComplete}>
+              <Shell />
+            </LoadingOverlay>
+          ) : (
+            <Shell />
+          )}
         </QuizProvider>
       </SmoothScroll>
     </MotionConfig>

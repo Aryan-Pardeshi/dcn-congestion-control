@@ -12,6 +12,11 @@ export default function Footer() {
           <p className="footer-name">Congestion Control Lab</p>
           <p className="footer-text">Data Communication &amp; Networks lab — Module 4.2, The Network Layer in the Internet</p>
         </div>
+        <div className="footer-credit">
+          <p className="footer-credit-name">Aryan Pardeshi</p>
+          <p className="footer-credit-line">KJ Somaiya College of Engineering</p>
+          <p className="footer-credit-roll">Roll no: 16010425080</p>
+        </div>
         <div className="footer-actions">
           <Link className="footer-link" to="/simulator">
             Simulator

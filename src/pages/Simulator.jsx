@@ -14,6 +14,7 @@ import { InfoTip } from '../sim/InfoTip.jsx';
 import { HELP } from '../sim/help.js';
 import { Icon } from '../sim/ui.jsx';
 import { useQuiz } from '../components/QuizContext.jsx';
+import Footer from '../components/Footer.jsx';
 import './Simulator.css';
 
 function useShortcuts({ toggle, stepOnce, reset, injectBurst }) {
@@ -232,6 +233,9 @@ export default function Simulator() {
           <motion.div {...rise(5)}>
             <CompareView config={config} />
           </motion.div>
+        </div>
+        <div className="sim-footer-pad">
+          <Footer />
         </div>
         <MobileRunBar {...sim} />
       </main>
