@@ -1,0 +1,203 @@
+/* Shared primitives for the simulator: numbers, sliders, segmented controls, pills, sparklines. */
+.tnum {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'zero' 0;
+}
+
+/* ---------------------------------------------------------------- fields + sliders */
+.field { display: block; }
+.field + .field { margin-top: 14px; }
+
+.field-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-bottom: 6px;
+}
+
+.field-row label {
+  font-size: 0.8125rem;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.field-val {
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+
+.field-hint {
+  margin-top: 4px;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--ink-faint);
+}
+
+.range {
+  --p: 50%;
+  --fill: var(--flow);
+  display: block;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.range-warn { --fill: var(--warn); }
+.range-token { --fill: var(--token); }
+
+.range:focus { outline: none; }
+
+.range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--fill) var(--p), var(--line-strong) var(--p));
+}
+
+.range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.range::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--fill);
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--bg-2), 0 1px 5px rgba(0, 0, 0, 0.45);
+  transition: transform 0.15s var(--ease-out), box-shadow 0.15s ease;
+}
+
+.range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--bg-2), 0 1px 5px rgba(0, 0, 0, 0.45);
+}
+
+.range:hover::-webkit-slider-thumb { transform: scale(1.12); }
+.range:active::-webkit-slider-thumb { transform: scale(1.2); box-shadow: 0 0 0 3px var(--bg-2), 0 0 0 6px color-mix(in srgb, var(--fill) 28%, transparent); }
+.range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--bg-2), 0 0 0 5px var(--fill); }
+.range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(--bg-2), 0 0 0 5px var(--fill); }
+
+/* ---------------------------------------------------------------- segmented control */
+.seg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.seg-btn {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.seg-btn:hover { color: var(--ink); }
+.seg-btn.on { color: var(--ink); }
+.seg-btn:focus-visible { outline-offset: 0; }
+
+.seg-hl {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 6px;
+  background: var(--bg-3);
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+
+.seg-label { position: relative; z-index: 1; }
+.seg-sm .seg-btn { padding: 3px 6px; font-size: 0.6875rem; }
+
+/* ---------------------------------------------------------------- pills */
+.pill {
+  --tone: var(--ink-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px 3px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tone) 32%, transparent);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  color: var(--tone);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.pill-ok { --tone: var(--ok); }
+.pill-flow { --tone: var(--flow); }
+.pill-warn { --tone: var(--warn); }
+.pill-drop { --tone: var(--drop); }
+.pill-idle { --tone: var(--ink-dim); }
+
+.pill-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pill-dot.pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pill-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes pill-ping {
+  0% { transform: scale(1); opacity: 0.7; }
+  80%, 100% { transform: scale(3); opacity: 0; }
+}
+
+/* ---------------------------------------------------------------- sparkline */
+.spark { display: block; overflow: visible; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

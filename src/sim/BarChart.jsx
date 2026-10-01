@@ -1,24 +1,39 @@
-export default function BarChart({ title, rows, unit = '', format }) {
+import { motion } from 'framer-motion';
+import './BarChart.css';
+
+/**
+ * rows: [{ label, full, value, colorVar, best }]
+ * HTML bars (not SVG text) so value labels never clip and short labels never truncate.
+ */
+export default function BarChart({ title, caption, rows, unit = '', decimals = 1, delay = 0 }) {
   const max = Math.max(1e-9, ...rows.map((r) => r.value));
-  const fmt = format || ((v) => `${Number(v).toFixed(1)}${unit}`);
+  const fmt = (v) => `${Number(v).toFixed(decimals)}${unit}`;
   return (
-    <figure className="bar-chart">
-      <figcaption>{title}</figcaption>
-      <svg viewBox={`0 0 260 ${rows.length * 34 + 8}`} role="img" aria-label={title}>
-        <title>{title}</title>
+    <figure className="bars">
+      <figcaption className="bars-head">
+        <span className="bars-title">{title}</span>
+        {caption && <span className="bars-cap">{caption}</span>}
+      </figcaption>
+      <ul className="bars-list" aria-label={title}>
         {rows.map((r, i) => {
-          const w = Math.max(2, (r.value / max) * 150);
-          const y = 8 + i * 34;
+          const pct = Math.max(r.value > 0 ? 2.5 : 0, (r.value / max) * 100);
           return (
-            <g key={r.label}>
-              <title>{`${r.label}: ${fmt(r.value)}`}</title>
-              <text x={0} y={y + 11} fontSize={10} fill="var(--ink-dim)" fontFamily="Archivo, sans-serif">{r.label}</text>
-              <rect x={86} y={y} width={w} height={14} rx={3} fill={`var(${r.colorVar})`} />
-              <text x={88 + w} y={y + 11} fontSize={10} fill="var(--ink)" fontFamily="'Martian Mono', monospace">{fmt(r.value)}</text>
-            </g>
+            <li key={r.label} className={`bars-row${r.best ? ' best' : ''}`} title={`${r.full || r.label}: ${fmt(r.value)}`}>
+              <span className="bars-label">{r.label}</span>
+              <span className="bars-track">
+                <motion.span
+                  className="bars-fill"
+                  style={{ background: `var(${r.colorVar})` }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, delay: delay + i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                />
+              </span>
+              <span className="bars-val tnum">{fmt(r.value)}</span>
+            </li>
           );
         })}
-      </svg>
+      </ul>
     </figure>
   );
 }

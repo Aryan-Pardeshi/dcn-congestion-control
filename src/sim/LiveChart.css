@@ -1,0 +1,75 @@
+.chart {
+  margin: 0;
+  min-width: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--s-3) var(--s-3) var(--s-3);
+}
+
+.chart-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: 0 var(--s-1);
+  margin-bottom: var(--s-2);
+}
+
+.chart-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+.chart-hint {
+  font-size: 0.6875rem;
+  color: var(--ink-faint);
+}
+
+.chart-body {
+  width: 100%;
+}
+
+.chart-body canvas {
+  display: block;
+  width: 100%;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--s-2);
+  padding: 0 var(--s-1);
+}
+
+.chart-legend .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 8px 1px 6px;
+}
+
+.chart-legend .chip i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.chart-legend .chip i.dash {
+  width: 10px;
+  height: 0;
+  border-radius: 0;
+  background: none !important;
+  border-top: 1.5px dashed;
+}

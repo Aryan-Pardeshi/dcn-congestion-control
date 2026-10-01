@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { compareAll } from './engine.js';
 import BarChart from './BarChart.jsx';
+import { Icon, Segmented } from './ui.jsx';
+import './CompareView.css';
 
 const CAT_COLOR = {
   Baseline: '--ink-dim',
@@ -9,23 +12,51 @@ const CAT_COLOR = {
   'Active queue management': '--flow',
 };
 
-function colorFor(cat) {
-  return CAT_COLOR[cat] || '--flow';
+const SHORT = { none: 'None', leaky: 'Leaky', token: 'Token', choke: 'Choke', red: 'RED' };
+const TICK_OPTIONS = [300, 500, 1000].map((t) => ({ value: t, label: String(t) }));
+
+// Only columns where "best" has a meaning. Generated is the same for every mechanism, so it is never highlighted.
+const COLUMNS = [
+  { key: 'delivered', label: 'Delivered', dir: 'high', fmt: (r) => r.delivered },
+  { key: 'dropped', label: 'Dropped', dir: 'low', fmt: (r) => r.dropped },
+  { key: 'dropRate', label: 'Drop rate %', dir: 'low', fmt: (r) => (r.dropRate * 100).toFixed(1) },
+  { key: 'avgQueue', label: 'Avg queue', dir: 'low', fmt: (r) => r.avgQueue.toFixed(1) },
+  { key: 'avgDelay', label: 'Avg delay', dir: 'low', fmt: (r) => r.avgDelay.toFixed(2) },
+  { key: 'throughput', label: 'Throughput', dir: 'high', fmt: (r) => r.throughput.toFixed(2) },
+  { key: 'utilization', label: 'Utilisation %', dir: 'high', fmt: (r) => (r.utilization * 100).toFixed(1) },
+];
+
+function bestIds(rows, key, dir) {
+  const vals = rows.map((r) => r[key]);
+  const target = dir === 'low' ? Math.min(...vals) : Math.max(...vals);
+  const ids = new Set(rows.filter((r) => Math.abs(r[key] - target) < 1e-9).map((r) => r.id));
+  // if every mechanism ties there is nothing to highlight
+  return ids.size === rows.length ? new Set() : ids;
 }
+
+const configKey = (c) => JSON.stringify({ s: c.seed, sources: c.sources, b: c.bufferSize, l: c.linkCapacity, p: c.params });
 
 export default function CompareView({ config }) {
   const [ticks, setTicks] = useState(500);
-  const [rows, setRows] = useState(null);
+  const [result, setResult] = useState(null); // { rows, ticks, key, seed }
   const [busy, setBusy] = useState(false);
+  const timer = useRef(0);
+
+  useEffect(() => () => clearTimeout(timer.current), []);
 
   const run = () => {
     setBusy(true);
-    setTimeout(() => {
-      const res = compareAll(config, ticks);
-      setRows(res);
+    clearTimeout(timer.current);
+    // yield a frame so the busy state paints, then compute (headless runs are fast)
+    timer.current = setTimeout(() => {
+      const rows = compareAll(config, ticks);
+      setResult({ rows, ticks, key: configKey(config), seed: config.seed, run: (result?.run ?? 0) + 1 });
       setBusy(false);
-    }, 0);
+    }, 280);
   };
+
+  const rows = result?.rows;
+  const stale = result && result.key !== configKey(config);
 
   const download = () => {
     if (!rows) return;
@@ -43,78 +74,124 @@ export default function CompareView({ config }) {
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
 
-  const best = (key, cmp) => {
-    if (!rows) return null;
-    let b = rows[0];
-    rows.forEach((r) => { if (cmp(r[key], b[key])) b = r; });
-    return b.id;
-  };
-  const bestDrop = best('dropRate', (a, b) => a < b);
-  const bestQueue = best('avgQueue', (a, b) => a < b);
-  const bestDelay = best('avgDelay', (a, b) => a < b);
-  const bestTput = best('throughput', (a, b) => a > b);
-  const bestUtil = best('utilization', (a, b) => a > b);
-  const bestDeliv = best('delivered', (a, b) => a > b);
-  const bestGen = best('generated', (a, b) => a > b);
-  const bestDropN = best('dropped', (a, b) => a < b);
+  const best = useMemo(() => {
+    if (!rows) return {};
+    const out = {};
+    COLUMNS.forEach((c) => { out[c.key] = bestIds(rows, c.key, c.dir); });
+    return out;
+  }, [rows]);
 
-  let observation = '';
+  let observation = null;
   if (rows) {
     const lowQ = rows.reduce((a, b) => (b.avgQueue < a.avgQueue ? b : a));
     const lowD = rows.reduce((a, b) => (b.dropRate < a.dropRate ? b : a));
-    observation = `${lowQ.name} had the lowest average queue (${lowQ.avgQueue.toFixed(1)} packets); ${lowD.name} had the lowest drop rate (${(lowD.dropRate * 100).toFixed(1)}%).`;
+    observation = { lowQ, lowD };
   }
 
-  const barRows = (key) => (rows || []).map((r) => ({ label: r.name, value: r[key], colorVar: colorFor(r.category) }));
+  const bar = (key, scale = 1) => (rows || []).map((r) => ({
+    label: SHORT[r.id],
+    full: r.name,
+    value: r[key] * scale,
+    colorVar: CAT_COLOR[r.category] || '--flow',
+    best: best[key]?.has(r.id),
+  }));
 
   return (
-    <section className="compare" aria-label="Compare all mechanisms">
-      <h2>Compare all mechanisms</h2>
-      <p>Runs every mechanism headlessly for N ticks on identical traffic (same seed and sources).</p>
-      <div className="compare-bar">
-        <label>Ticks
-          <select value={ticks} onChange={(e) => setTicks(Number(e.target.value))} aria-label="Comparison ticks">
-            {[300, 500, 1000].map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </label>
-        <button type="button" className="btn" onClick={run} disabled={busy}>{busy ? 'Running…' : 'Run comparison'}</button>
-        {rows && <button type="button" className="btn-ghost" onClick={download}>Download CSV</button>}
-      </div>
-      {rows && (
-        <>
-          <div className="bar-grid">
-            <BarChart title="Drop rate %" rows={barRows('dropRate').map((r) => ({ ...r, value: r.value * 100 }))} unit="%" />
-            <BarChart title="Avg queue" rows={barRows('avgQueue')} />
-            <BarChart title="Avg delay" rows={barRows('avgDelay')} />
-            <BarChart title="Throughput" rows={barRows('throughput')} />
+    <section className="compare panel" aria-label="Compare all mechanisms">
+      <header className="compare-head">
+        <div>
+          <h2 className="compare-title">Compare all mechanisms</h2>
+          <p className="compare-sub">
+            Runs every mechanism headlessly on identical traffic: same seed, sources, buffer and link as the simulator above.
+          </p>
+        </div>
+        <div className="compare-actions">
+          <div className="compare-ticks">
+            <span className="compare-ticks-label">Ticks</span>
+            <Segmented size="sm" options={TICK_OPTIONS} value={ticks} onChange={setTicks} ariaLabel="Number of ticks to simulate" />
           </div>
-          <p className="compare-obs">{observation}</p>
-          <div className="table-wrap">
-            <table className="compare-table mono">
+          <button type="button" className="btn compare-run" onClick={run} disabled={busy}>
+            {busy ? <span className="spinner" aria-hidden="true" /> : <Icon name="play" />}
+            <span>{busy ? 'Running' : rows ? 'Run again' : 'Run comparison'}</span>
+          </button>
+          {rows && (
+            <button type="button" className="btn-ghost compare-dl" onClick={download}>
+              <Icon name="download" />
+              <span>Download CSV</span>
+            </button>
+          )}
+        </div>
+      </header>
+
+      {!rows && !busy && (
+        <div className="compare-empty">
+          <Icon name="spark" size={18} />
+          <p>Run the comparison to see drop rate, queue, delay and throughput side by side.</p>
+        </div>
+      )}
+      {busy && !rows && (
+        <div className="compare-skeleton" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => <span key={i} className="shimmer" />)}
+        </div>
+      )}
+
+      {rows && (
+        <div className={`compare-results${busy ? ' is-busy' : ''}`}>
+          {stale && <p className="compare-stale">Settings changed since this run. Run again to refresh.</p>}
+          <div className="bar-grid" key={result.run}>
+            <BarChart title="Drop rate" caption="lower is better" unit="%" rows={bar('dropRate', 100)} />
+            <BarChart title="Avg queue" caption="packets, lower is better" rows={bar('avgQueue')} delay={0.05} />
+            <BarChart title="Avg delay" caption="ticks, lower is better" decimals={2} rows={bar('avgDelay')} delay={0.1} />
+            <BarChart title="Throughput" caption="pkt/tick, higher is better" decimals={2} rows={bar('throughput')} delay={0.15} />
+          </div>
+
+          <motion.p
+            key={`obs-${result.run}`}
+            className="compare-obs"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+          >
+            <b>{observation.lowQ.name}</b> had the lowest average queue ({observation.lowQ.avgQueue.toFixed(1)} packets); <b>{observation.lowD.name}</b> had the lowest drop rate ({(observation.lowD.dropRate * 100).toFixed(1)}%).
+          </motion.p>
+
+          <div className="table-wrap" data-lenis-prevent>
+            <table className="compare-table">
               <thead>
                 <tr>
-                  <th>Mechanism</th><th>Category</th><th>Generated</th><th>Delivered</th><th>Dropped</th>
-                  <th>Drop rate %</th><th>Avg queue</th><th>Avg delay</th><th>Throughput</th><th>Utilisation %</th>
+                  <th className="col-name">Mechanism</th>
+                  <th className="col-num">Generated</th>
+                  {COLUMNS.map((c) => <th key={c.key} className="col-num">{c.label}</th>)}
                 </tr>
               </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.id}>
-                    <td>{r.name}</td><td>{r.category}</td>
-                    <td className={bestGen === r.id ? 'best' : ''}>{r.generated}</td>
-                    <td className={bestDeliv === r.id ? 'best' : ''}>{r.delivered}</td>
-                    <td className={bestDropN === r.id ? 'best' : ''}>{r.dropped}</td>
-                    <td className={bestDrop === r.id ? 'best' : ''}>{(r.dropRate * 100).toFixed(1)}</td>
-                    <td className={bestQueue === r.id ? 'best' : ''}>{r.avgQueue.toFixed(1)}</td>
-                    <td className={bestDelay === r.id ? 'best' : ''}>{r.avgDelay.toFixed(2)}</td>
-                    <td className={bestTput === r.id ? 'best' : ''}>{r.throughput.toFixed(2)}</td>
-                    <td className={bestUtil === r.id ? 'best' : ''}>{(r.utilization * 100).toFixed(1)}</td>
-                  </tr>
+              <tbody key={result.run}>
+                {rows.map((r, i) => (
+                  <motion.tr
+                    key={r.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 + i * 0.07, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <th scope="row" className="col-name">
+                      <span className="mech-cell">
+                        <i style={{ background: `var(${CAT_COLOR[r.category] || '--flow'})` }} />
+                        <span>
+                          <span className="mech-cell-name">{r.name}</span>
+                          <span className="mech-cell-cat">{r.category}</span>
+                        </span>
+                      </span>
+                    </th>
+                    <td className="col-num">{r.generated}</td>
+                    {COLUMNS.map((c) => (
+                      <td key={c.key} className={`col-num${best[c.key]?.has(r.id) ? ' best' : ''}`}>{c.fmt(r)}</td>
+                    ))}
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </>
+          <p className="compare-legend"><i /> Best value in each column, shown for the {result.ticks}-tick run with seed {result.seed}.</p>
+        </div>
       )}
     </section>
   );
