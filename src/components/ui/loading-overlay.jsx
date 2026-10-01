@@ -39,14 +39,15 @@ export function LoadingOverlay({ onComplete, children }) {
     let t2 = 0
     let t3 = 0
     let cancelled = false
-    const duration = 2000
+    const duration = 6000
     const startTime = Date.now()
     const animatePercentage = () => {
       if (cancelled) return
       const elapsed = Date.now() - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      setPercentage(Math.round(progress * 100))
-      if (progress < 1) {
+      const t = Math.min(elapsed / duration, 1)
+      const progress = 1 - Math.pow(1 - t, 3)
+      setPercentage(t >= 1 ? 100 : Math.round(progress * 100))
+      if (t < 1) {
         rafId = requestAnimationFrame(animatePercentage)
       } else {
         t1 = window.setTimeout(() => {
