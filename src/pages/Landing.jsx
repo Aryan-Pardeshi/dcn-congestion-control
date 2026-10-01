@@ -6,15 +6,12 @@ import Reveal, { Stagger, StaggerItem } from '../components/Reveal'
 import HeroTopology from '../components/HeroTopology'
 import NetworkDiagram from '../components/NetworkDiagram'
 import MechanismTabs from '../components/MechanismTabs'
-import CountUp from '../components/anim/CountUp'
 import { useQuiz } from '../components/QuizContext'
-import { quizBank } from '../content/quizBank'
 import {
   experiment,
   problemStatement,
   resources,
   theoryIntro,
-  mechanisms,
   comparison,
   addressing,
   procedure,
@@ -31,12 +28,6 @@ const SECTIONS = [
   { id: 'procedure', num: '07', label: 'Procedure' },
 ]
 
-const STATS = [
-  { value: mechanisms.length, label: 'Mechanisms compared' },
-  { value: 3, label: 'Campus LANs' },
-  { value: 10, suffix: ' Mbps', label: 'Bottleneck WAN link' },
-  { value: quizBank.length, label: 'Quiz questions' },
-]
 
 const HERO_WORDS = ['Congestion', 'control', 'algorithms']
 const EASE = [0.16, 1, 0.3, 1]
@@ -152,18 +143,6 @@ export default function Landing() {
       </section>
 
       <div className="wrap">
-        <Stagger className="stats" stagger={0.08}>
-          {STATS.map((s) => (
-            <StaggerItem key={s.label} className="stat spot">
-              <p className="stat-num">
-                <CountUp to={s.value} />
-                {s.suffix && <span className="stat-suffix">{s.suffix}</span>}
-              </p>
-              <p className="stat-label">{s.label}</p>
-            </StaggerItem>
-          ))}
-        </Stagger>
-
         <div className="landing-cols">
           <nav className="section-index" aria-label="Experiment sections">
             <ol>

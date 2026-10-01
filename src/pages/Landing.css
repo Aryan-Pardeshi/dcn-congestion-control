@@ -79,42 +79,6 @@
   margin-top: var(--s-8);
 }
 
-/* ---------- Stats ---------- */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--s-3);
-  margin-top: calc(-1 * var(--s-2));
-}
-
-.stat {
-  padding: var(--s-5);
-}
-
-.stat-num {
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-  font-size: clamp(1.9rem, 4vw, 2.6rem);
-  font-weight: 600;
-  letter-spacing: -0.05em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-suffix {
-  font-size: 0.95rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--ink-dim);
-}
-
-.stat-label {
-  margin-top: var(--s-2);
-  font-size: 0.85rem;
-  color: var(--ink-dim);
-}
-
 /* ---------- Layout with rail ---------- */
 .landing-cols {
   display: grid;
@@ -694,10 +658,6 @@
 
   .hero-visual {
     margin-top: var(--s-7);
-  }
-
-  .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .checklist,
