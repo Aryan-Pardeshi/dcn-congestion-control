@@ -1,0 +1,53 @@
+:root, [data-theme="dark"] {
+  --bg: #0E2236;
+  --bg-2: #13304A;
+  --bg-3: #1A3D5C;
+  --line: #2C5072;
+  --ink: #E6EEF5;
+  --ink-dim: #93A9BE;
+  --flow: #4FD1C5;
+  --warn: #F5B841;
+  --drop: #F2545B;
+  --token: #B69CFF;
+  --grid: rgba(147, 169, 190, 0.07);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(3, 12, 22, 0.45);
+
+  --font-sans: "Archivo", system-ui, sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, monospace;
+
+  --fs-0: 0.875rem;
+  --fs-1: 1rem;
+  --fs-2: 1.25rem;
+  --fs-3: 1.563rem;
+  --fs-4: 1.953rem;
+  --fs-5: 2.441rem;
+  --fs-6: 3.815rem;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+}
+
+[data-theme="light"] {
+  --bg: #EEF3F7;
+  --bg-2: #FFFFFF;
+  --bg-3: #E2EBF2;
+  --line: #B9CCDC;
+  --ink: #12304D;
+  --ink-dim: #4E6A84;
+  --flow: #0F9488;
+  --warn: #B7791F;
+  --drop: #D13B42;
+  --token: #6D4FD8;
+  --grid: rgba(18, 48, 77, 0.06);
+  --shadow: 0 8px 24px rgba(18, 48, 77, 0.10);
+}

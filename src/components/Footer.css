@@ -1,0 +1,13 @@
+.footer {
+  border-top: 1px solid var(--line);
+  margin-top: var(--s-8);
+  padding: var(--s-5) 0;
+  color: var(--ink-dim);
+  font-size: var(--fs-0);
+}
+
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
