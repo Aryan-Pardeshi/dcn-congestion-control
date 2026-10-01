@@ -67,6 +67,17 @@ function niceMax(v) {
   return nice * pow;
 }
 
+// Whole-number y tick step: smallest 1/2/5-power-of-10 step giving at most 3 intervals.
+function niceTickStep(max) {
+  if (!(max > 0)) return 1;
+  const mag = 10 ** Math.floor(Math.log10(max / 3));
+  for (const m of [1, 2, 5, 10]) {
+    const step = m * mag;
+    if (Math.ceil(max / step) <= 3) return step;
+  }
+  return 10 * mag;
+}
+
 /**
  * series: [{ label, color: '--flow', values: number[], area?: boolean, width?: number }]
  * refs:   [{ value, label, color, dashed? }]   labels sit at the left, inside the plot
@@ -135,7 +146,17 @@ export default function LiveChart({ title, hint, tip, series, yMax, refs = [], e
       ctx.clearRect(0, 0, W, H);
 
       const max = sc.max;
-      const padL = 30;
+      // whole-number ticks covering max with at most 3 intervals (e.g. 0, 20, 40)
+      const tickStep = niceTickStep(max);
+      const tickTop = Math.ceil(max / tickStep) * tickStep;
+      const tickCount = Math.round(tickTop / tickStep);
+      // measure the widest label first so labels are never clipped on the left
+      ctx.font = `12px ${MONO}`;
+      let labelW = 0;
+      for (let i = 0; i <= tickCount; i += 1) {
+        labelW = Math.max(labelW, ctx.measureText(String(i * tickStep)).width);
+      }
+      const padL = Math.ceil(labelW) + 12;
       const padR = 40;
       const padT = 10;
       const padB = 20;
@@ -148,19 +169,17 @@ export default function LiveChart({ title, hint, tip, series, yMax, refs = [], e
       const inkFaint = colorOf('--ink-faint');
       const lineC = colorOf('--line');
 
-      // grid + y labels (3 ticks, large readable labels)
-      ctx.font = `12px ${MONO}`;
+      // grid + y labels (large readable labels)
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 1;
-      const steps = 3;
-      for (let i = 0; i <= steps; i += 1) {
-        const y = Math.round(padT + ih - (ih * i) / steps) + 0.5;
+      for (let i = 0; i <= tickCount; i += 1) {
+        const v = i * tickStep;
+        const y = Math.round(yOf(v)) + 0.5;
         ctx.strokeStyle = lineC;
         ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + iw, y); ctx.stroke();
         ctx.fillStyle = inkFaint;
         ctx.textAlign = 'right';
-        const v = (max * i) / steps;
-        ctx.fillText(Number.isInteger(v) ? String(v) : v.toFixed(1), padL - 6, y);
+        ctx.fillText(String(v), padL - 6, y);
       }
       // x labels: tick numbers at both ends of the window
       const len = Math.max(...S.map((s) => (s.values || []).length), 0);

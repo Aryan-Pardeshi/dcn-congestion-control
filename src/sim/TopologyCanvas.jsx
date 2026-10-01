@@ -312,8 +312,6 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
   const algoId = sim.config.algorithm;
   const algo = ALGORITHMS[algoId];
   const shaper = algoId === 'leaky' || algoId === 'token';
-  const as = sim.algoState || {};
-  const narrow = W < 560;
   const tiny = W < 440;
   const fs = clamp(W / 85, 9.5, 12.5);
   const sm = Math.max(9, fs - 1);
@@ -730,31 +728,4 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
   text(ctx, `t = ${sim.tick}`, 14, 18, col('--ink'), 12.5, { weight: 600, mono: true });
   const mech = fit(ctx, fs, 400, false, [algo?.name || ''], W - 28);
   text(ctx, mech, 14, 35, col('--ink-dim'), fs);
-  if (!narrow && algo) {
-    text(ctx, algo.category, W - 14, 18, col('--ink-faint'), sm, { align: 'right' });
-  }
-
-  // legend
-  if (W >= 520) {
-    const ly = H - 14;
-    let x = 14;
-    const chip = (label, color, diamond) => {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      if (diamond) {
-        ctx.moveTo(x + 4, ly - 4.5); ctx.lineTo(x + 8.5, ly); ctx.lineTo(x + 4, ly + 4.5); ctx.lineTo(x - 0.5, ly);
-      } else {
-        ctx.arc(x + 4, ly, 3, 0, TAU);
-      }
-      ctx.closePath();
-      ctx.fill();
-      text(ctx, label, x + 14, ly, col('--ink-faint'), sm);
-      setFont(ctx, sm, 400, false);
-      x += 14 + ctx.measureText(label).width + 16;
-    };
-    chip('packet', col('--flow'));
-    chip('dropped', col('--drop'));
-    if (algoId === 'choke') chip('choke packet', col('--warn'), true);
-    if (algoId === 'red') chip('avg queue', col('--token'));
-  }
 }

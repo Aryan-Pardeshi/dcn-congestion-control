@@ -54,7 +54,7 @@ export default function EventLog({ events }) {
   }, []);
 
   return (
-    <section className="elog panel" aria-label="Event log">
+    <section className={`elog panel${open ? ' open' : ''}`} aria-label="Event log">
       <button type="button" className="elog-disclosure" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
         <span className="panel-title">Event log <InfoTip tip={HELP.eventLog} thing="event log" /></span>
         <span className="elog-right">

@@ -134,7 +134,8 @@
     max-height: calc(100vh - var(--sim-top) - 16px);
   }
   .sim-side .sstats { flex: none; }
-  .sim-side .elog { flex: 1 1 0; min-height: 240px; }
+  .sim-side .elog { flex: none; }
+  .sim-side .elog.open { flex: 1 1 0; min-height: 240px; }
   .sim-side .elog-box { height: 0; flex: 1 1 0; min-height: 0; }
 }
 
@@ -147,7 +148,7 @@
       'controls charts'
       'side side';
   }
-  .sim-side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+  .sim-side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
 }
 
 @media (max-width: 899.98px) {
@@ -257,22 +258,6 @@
 .guide-link:hover { color: var(--ink); }
 
 .runbar .hint { display: contents; }
-
-.info-counters { display: flex; flex-wrap: wrap; gap: 6px; }
-
-.counter {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 2px 10px 2px 8px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-size: 0.6875rem;
-  color: var(--ink-dim);
-  white-space: nowrap;
-}
-.counter i { width: 6px; height: 6px; border-radius: 50%; }
-.counter .tnum { color: var(--ink); font-size: 0.75rem; }
 
 /* ---------------------------------------------------------------- mobile run bar */
 .runbar { display: none; }

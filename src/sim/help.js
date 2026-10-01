@@ -63,7 +63,7 @@ export const HELP = {
   statDelivered:
     'Packets that reached the server so far. Higher is better.',
   statLost:
-    'Packets lost because a queue or bucket was full. Lower is better.',
+    'Packets lost because a queue or bucket was full, or dropped early on purpose by RED. Lower is better.',
   statQueue:
     'Packets waiting at router R1 right now, out of how many it can hold. When it is full, new packets are lost.',
   statWait:

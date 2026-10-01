@@ -12,11 +12,9 @@ import QuickStart, { loadQuickstart, saveQuickstartDismissed, clearQuickstartDis
 import { Hint } from '../sim/InfoTip.jsx';
 import { InfoTip } from '../sim/InfoTip.jsx';
 import { HELP } from '../sim/help.js';
-import { AnimatedNumber, Icon } from '../sim/ui.jsx';
+import { Icon } from '../sim/ui.jsx';
 import { useQuiz } from '../components/QuizContext.jsx';
 import './Simulator.css';
-
-const int = (v) => Math.round(v).toLocaleString('en-US');
 
 function useShortcuts({ toggle, stepOnce, reset, injectBurst }) {
   useEffect(() => {
@@ -39,27 +37,6 @@ function useShortcuts({ toggle, stepOnce, reset, injectBurst }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [toggle, stepOnce, reset, injectBurst]);
-}
-
-function Counters({ snapshot }) {
-  const algo = snapshot.algorithm;
-  const d = snapshot.dropsByReason || { shape: 0, red: 0, overflow: 0 };
-  const items = [];
-  if (algo === 'leaky' || algo === 'token') items.push({ label: 'Shaper drops', value: d.shape, tone: '--token' });
-  if (algo === 'red') items.push({ label: 'Early drops', value: d.red, tone: '--warn' });
-  if (algo === 'choke') items.push({ label: 'Chokes sent', value: snapshot.algoState?.chokesSent ?? 0, tone: '--warn' });
-  items.push({ label: 'Tail drops', value: d.overflow, tone: '--drop' });
-  return (
-    <div className="info-counters">
-      {items.map((c) => (
-        <span key={c.label} className="counter">
-          <i style={{ background: `var(${c.tone})` }} />
-          {c.label}
-          <AnimatedNumber value={c.value} format={int} />
-        </span>
-      ))}
-    </div>
-  );
 }
 
 /** One plain-English sentence describing the current state. */
@@ -203,7 +180,6 @@ export default function Simulator() {
                     {narration}
                   </motion.p>
                 </AnimatePresence>
-                <Counters snapshot={snapshot} />
               </div>
               <div className="canvas-legend" aria-label="Diagram legend">
                 <span className="lg"><i className="dot dot-flow" /> packet</span>
