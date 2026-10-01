@@ -39,7 +39,7 @@ export function LoadingOverlay({ onComplete, children }) {
     let t2 = 0
     let t3 = 0
     let cancelled = false
-    const duration = 6000
+    const duration = 2500
     const startTime = Date.now()
     const animatePercentage = () => {
       if (cancelled) return
