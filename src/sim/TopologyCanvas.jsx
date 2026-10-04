@@ -5,6 +5,8 @@ import './TopologyCanvas.css';
 const SANS = '"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
 const MONO = '"Geist Mono", ui-monospace, "SFMono-Regular", Consolas, monospace';
 const MAX_DOTS = 500;
+const TRAIL = 6;
+const frac = (v) => v - Math.floor(v);
 const TAU = Math.PI * 2;
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -170,10 +172,11 @@ export default function TopologyCanvas({ simRef, snapshot }) {
       const lt = sim.lastTick || {};
       const algoId = sim.config.algorithm;
       const shaper = algoId === 'leaky' || algoId === 'token';
+  const ast = sim.algoState || {};
       const D = clamp(st.tickMs * 3.2, 380, 1100);
       const spread = Math.min(st.tickMs * 0.9, 320);
       const rnd = Math.random;
-      const add = (d) => st.dots.push(d);
+      const add = (d) => st.dots.push({ ...d, seed: rnd() });
 
       const genDur = shaper ? D * 0.7 : D * 0.85;
       (lt.generated || []).forEach((arr, si) => {
@@ -312,6 +315,7 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
   const algoId = sim.config.algorithm;
   const algo = ALGORITHMS[algoId];
   const shaper = algoId === 'leaky' || algoId === 'token';
+  const ast = sim.algoState || {};
   const tiny = W < 440;
   const fs = clamp(W / 85, 9.5, 12.5);
   const sm = Math.max(9, fs - 1);
@@ -440,19 +444,25 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
   const flowGlow = st.dots.length < 160 && !reduced;
   const dropFall = H * 0.08 + 14;
   st.dots = st.dots.filter((d) => now < d.t0 + d.dur);
+  const sparks = st.dots.length > 140 ? 5 : 9;
   st.dots.forEach((d) => {
     if (d.k !== 'drop' || now < d.t0) return;
     const p = (now - d.t0) / d.dur;
     const ox = d.at === 'gauge' ? gx1 : bx0;
     const oy = d.at === 'gauge' ? gy0 + 6 : yc - bh / 2;
-    const x = ox + d.vx * p;
-    const y = oy + (-20 * p + (20 + dropFall) * p * p);
-    ctx.globalAlpha = 1 - p * p;
     ctx.fillStyle = col('--drop');
     if (flowGlow) { ctx.shadowColor = col('--drop'); ctx.shadowBlur = 8; }
-    ctx.beginPath();
-    ctx.arc(x, y, 2.6, 0, TAU);
-    ctx.fill();
+    // lost packet bursts into sparks that fan out and fall
+    for (let k = 0; k < sparks; k += 1) {
+      const a = (k / sparks) * TAU + (d.seed || 0) * TAU;
+      const reach = (16 + 46 * frac((d.seed || 0.3) * (k + 3.1) * 97.31)) * (1 - (1 - p) * (1 - p));
+      const x = ox + Math.cos(a) * reach + d.vx * 0.3 * p;
+      const y = oy + Math.sin(a) * reach + dropFall * p * p;
+      ctx.globalAlpha = (1 - p) * (1 - p) * 0.95;
+      ctx.beginPath();
+      ctx.arc(x, y, 2.2 * (1 - p * 0.6) + 0.3, 0, TAU);
+      ctx.fill();
+    }
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
   });
@@ -489,9 +499,9 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
   });
 
   // shaping gauge
-  if (shaper && as.cfg) {
+  if (shaper && ast.cfg) {
     const isLeaky = algoId === 'leaky';
-    const cap = isLeaky ? (as.cfg.bucketSize || 1) : (as.cfg.bucketCapacity || 1);
+    const cap = isLeaky ? (ast.cfg.bucketSize || 1) : (ast.cfg.bucketCapacity || 1);
     const val = isLeaky ? st.disp.level : st.disp.tokens;
     const frac = clamp(val / cap, 0, 1);
     const gc = isLeaky ? (frac > 0.9 ? '--drop' : frac > 0.6 ? '--warn' : '--flow') : '--token';
@@ -525,8 +535,8 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
     const count = isLeaky ? `${Math.round(val)}/${cap}` : `${val.toFixed(1)}/${cap}`;
     const countStr = fit(ctx, sm, 400, true, [count, `${Math.round(val)}`], lw);
     text(ctx, countStr, gaugeCx, ly + sm * 1.5, col(gc), sm, { mono: true, align: 'center' });
-    const extra = isLeaky ? `leak r = ${as.cfg.leakRate}` : `waiting ${as.waiting ?? 0}`;
-    const extraStr = fit(ctx, sm, 400, true, isLeaky ? [extra, `r = ${as.cfg.leakRate}`] : [extra, `wait ${as.waiting ?? 0}`], lw);
+    const extra = isLeaky ? `leak r = ${ast.cfg.leakRate}` : `waiting ${ast.waiting?.length ?? 0}`;
+    const extraStr = fit(ctx, sm, 400, true, isLeaky ? [extra, `r = ${ast.cfg.leakRate}`] : [extra, `wait ${ast.waiting?.length ?? 0}`], lw);
     text(ctx, extraStr, gaugeCx, ly + sm * 3, col('--ink-dim'), sm, { mono: true, align: 'center' });
   } else {
     // plain junction where the three sources merge
@@ -611,8 +621,8 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
   let labelY = yc + bh / 2 + sm + 3;
 
   // RED markers: thresholds, running average and drop probability
-  if (algoId === 'red' && as.cfg) {
-    const { minTh, maxTh } = as.cfg;
+  if (algoId === 'red' && ast.cfg) {
+    const { minTh, maxTh } = ast.cfg;
     const xAt = (v) => bx1 - inset - (clamp(v, 0, buf) / buf) * innerW;
     [[minTh, '--warn', 'min'], [maxTh, '--drop', 'max']].forEach(([v, c]) => {
       const x = xAt(v);
@@ -623,7 +633,7 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
       ctx.lineTo(x, yc + bh / 2 + 5);
       ctx.stroke();
     });
-    const avg = as.avg ?? 0;
+    const avg = ast.avg ?? 0;
     const ax = xAt(avg);
     ctx.fillStyle = col('--token');
     ctx.beginPath();
@@ -632,8 +642,8 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
     ctx.lineTo(ax + 4, yc - bh / 2 - 8);
     ctx.closePath();
     ctx.fill();
-    const pStr = `p = ${(as.lastP ?? 0).toFixed(3)}`;
-    const top = fit(ctx, sm, 400, true, [`avg ${avg.toFixed(1)}   ${pStr}`, pStr, `p ${(as.lastP ?? 0).toFixed(2)}`], bw + W * 0.02);
+    const pStr = `p = ${(ast.lastP ?? 0).toFixed(3)}`;
+    const top = fit(ctx, sm, 400, true, [`avg ${avg.toFixed(1)}   ${pStr}`, pStr, `p ${(ast.lastP ?? 0).toFixed(2)}`], bw + W * 0.02);
     text(ctx, top, bx0, yc - bh / 2 - 17, col('--ink-dim'), sm, { mono: true });
     const minL = fit(ctx, sm - 0.5, 400, true, [`min ${minTh}`, `${minTh}`], bw);
     const maxL = fit(ctx, sm - 0.5, 400, true, [`max ${maxTh}`, `${maxTh}`], bw);
@@ -681,20 +691,47 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
   text(ctx, sCount, sx0 + sw / 2, yc + fs * 0.8, col('--ok'), sm, { mono: true, align: 'center' });
 
   // ------------------------------------------------------------------ flowing packets
-  const dotR = clamp(W / 330, 2.2, 3.4);
+  const dotR = clamp(W / 260, 2.8, 4.2);
   const flow = col('--flow');
+  const okc = col('--ok');
   const drawDots = (kinds, color, radius) => {
     ctx.fillStyle = color;
-    if (flowGlow) { ctx.shadowColor = color; ctx.shadowBlur = 8; }
     st.dots.forEach((d) => {
       if (now < d.t0 || !kinds.includes(d.k)) return;
       const p = (now - d.t0) / d.dur;
       const path = d.k === 'gen' ? genPaths[d.i] || genPaths[0] : d.k === 'exit' ? exitPath : d.k === 'enq' ? enqPath : delPath;
+      const fade = clamp(Math.min(p * 8, (1 - p) * 6), 0, 1);
+      // fading trail behind the packet
+      ctx.shadowBlur = 0;
+      for (let j = TRAIL; j >= 1; j -= 1) {
+        const pj = p - j * 0.022;
+        if (pj <= 0) continue;
+        const tp = pathAt(path, easeInOut(pj));
+        ctx.globalAlpha = fade * (1 - j / (TRAIL + 1)) * 0.45;
+        ctx.beginPath();
+        ctx.arc(tp.x, tp.y, radius * (1 - (j / (TRAIL + 2)) * 0.6), 0, TAU);
+        ctx.fill();
+      }
       const pos = pathAt(path, easeInOut(p));
-      ctx.globalAlpha = clamp(Math.min(p * 8, (1 - p) * 6), 0, 1);
+      if (flowGlow) { ctx.shadowColor = color; ctx.shadowBlur = 10; }
+      ctx.globalAlpha = fade;
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, radius, 0, TAU);
       ctx.fill();
+      ctx.shadowBlur = 0;
+      // delivered: small green sparkle at the server
+      if (d.k === 'del' && p > 0.9) {
+        const q = (p - 0.9) / 0.1;
+        ctx.fillStyle = okc;
+        for (let k = 0; k < 4; k += 1) {
+          const a = (k / 4) * TAU + (d.seed || 0) * TAU;
+          ctx.globalAlpha = (1 - q) * 0.8;
+          ctx.beginPath();
+          ctx.arc(pos.x + Math.cos(a) * q * 9, pos.y + Math.sin(a) * q * 9, 1.6, 0, TAU);
+          ctx.fill();
+        }
+        ctx.fillStyle = color;
+      }
     });
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
@@ -706,19 +743,34 @@ function draw(ctx, sim, now, W, H, pal, st, reduced) {
     const warn = col('--warn');
     ctx.fillStyle = warn;
     if (flowGlow) { ctx.shadowColor = warn; ctx.shadowBlur = 10; }
+    const diamond = (x, y, r) => {
+      ctx.beginPath();
+      ctx.moveTo(x, y - r);
+      ctx.lineTo(x + r, y);
+      ctx.lineTo(x, y + r);
+      ctx.lineTo(x - r, y);
+      ctx.closePath();
+      ctx.fill();
+    };
     st.dots.forEach((d) => {
       if (d.k !== 'choke' || now < d.t0) return;
       const p = (now - d.t0) / d.dur;
-      const pos = pathAt(chokePaths[d.i] || chokePaths[0], easeInOut(p));
-      const r = dotR + 2.2;
-      ctx.globalAlpha = clamp(Math.min(p * 8, (1 - p) * 6), 0, 1);
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y - r);
-      ctx.lineTo(pos.x + r, pos.y);
-      ctx.lineTo(pos.x, pos.y + r);
-      ctx.lineTo(pos.x - r, pos.y);
-      ctx.closePath();
-      ctx.fill();
+      const cpath = chokePaths[d.i] || chokePaths[0];
+      const fade = clamp(Math.min(p * 8, (1 - p) * 6), 0, 1);
+      const r = dotR + 2.4;
+      ctx.shadowBlur = 0;
+      for (let j = TRAIL; j >= 1; j -= 1) {
+        const pj = p - j * 0.024;
+        if (pj <= 0) continue;
+        const tp = pathAt(cpath, easeInOut(pj));
+        ctx.globalAlpha = fade * (1 - j / (TRAIL + 1)) * 0.4;
+        diamond(tp.x, tp.y, r * (1 - (j / (TRAIL + 2)) * 0.5));
+      }
+      const pos = pathAt(cpath, easeInOut(p));
+      if (flowGlow) { ctx.shadowColor = warn; ctx.shadowBlur = 12; }
+      ctx.globalAlpha = fade;
+      diamond(pos.x, pos.y, r);
+      ctx.shadowBlur = 0;
     });
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;

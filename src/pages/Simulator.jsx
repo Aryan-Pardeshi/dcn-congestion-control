@@ -13,7 +13,6 @@ import { Hint } from '../sim/InfoTip.jsx';
 import { InfoTip } from '../sim/InfoTip.jsx';
 import { HELP } from '../sim/help.js';
 import { Icon } from '../sim/ui.jsx';
-import { useQuiz } from '../components/QuizContext.jsx';
 import Footer from '../components/Footer.jsx';
 import './Simulator.css';
 
@@ -103,7 +102,6 @@ const rise = (i) => ({
 export default function Simulator() {
   const sim = useSimulation();
   const { snapshot, config } = sim;
-  const { openQuiz } = useQuiz();
   useShortcuts(sim);
   const [guideOpen, setGuideOpen] = useState(loadQuickstart);
   const [moreCharts, setMoreCharts] = useState(false);
@@ -151,7 +149,6 @@ export default function Simulator() {
             </div>
             <div className="sim-head-actions">
               <button type="button" className="guide-link" onClick={reopenGuide}>How to use</button>
-              <button type="button" className="btn-ghost quiz-btn" onClick={openQuiz}>Take the quiz</button>
             </div>
           </motion.header>
 

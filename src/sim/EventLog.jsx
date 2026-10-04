@@ -55,16 +55,16 @@ export default function EventLog({ events }) {
 
   return (
     <section className={`elog panel${open ? ' open' : ''}`} aria-label="Event log">
-      <button type="button" className="elog-disclosure" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+      <div className="elog-head">
         <span className="panel-title">Event log <InfoTip tip={HELP.eventLog} thing="event log" /></span>
-        <span className="elog-right">
+        <button type="button" className="elog-disclosure" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
           <span className="elog-count tnum">{rows.length} {rows.length === 1 ? 'event' : 'events'}</span>
           <svg className={`elog-chev${open ? ' open' : ''}`} width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m4 6 4 4 4-4" />
           </svg>
           <span className="elog-toggle">{open ? 'Hide' : 'Show event log'}</span>
-        </span>
-      </button>
+        </button>
+      </div>
       {open && (
         <div className="elog-wrap">
           <div ref={boxRef} className="elog-box" role="log" aria-live="off" onScroll={onScroll} tabIndex={0} data-lenis-prevent>

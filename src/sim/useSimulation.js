@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DEFAULT_CONFIG, createSimulation, step, metrics } from './engine.js';
 
-const TICKS_PER_SECOND = 8;
+const TICKS_PER_SECOND = 3;
 const SNAPSHOT_MS = 100;
 
 function snapshotOf(sim) {
@@ -110,7 +110,7 @@ export function useSimulation(initialConfig) {
     pushSnapshot();
   }, [pushSnapshot]);
 
-  // rAF loop: 8 ticks/s x speed, snapshot at most ~10/s; fully idle while the tab is hidden.
+  // rAF loop: 3 ticks/s x speed, snapshot at most ~10/s; fully idle while the tab is hidden.
   useEffect(() => {
     let raf = 0;
     let last = performance.now();

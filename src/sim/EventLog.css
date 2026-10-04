@@ -1,22 +1,26 @@
 .elog { display: flex; flex-direction: column; min-height: 0; }
 
-.elog-disclosure {
+.elog-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  width: 100%;
   padding: 11px 16px;
+}
+.elog-head .panel-title { display: inline-flex; align-items: center; gap: 6px; }
+.elog-disclosure {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 1;
+  padding: 0;
   border: 0;
-  border-bottom: 1px solid transparent;
   background: transparent;
   color: inherit;
   font-family: inherit;
   cursor: pointer;
-  text-align: left;
 }
-.elog-disclosure .panel-title { display: inline-flex; align-items: center; gap: 6px; }
-.elog-right { display: inline-flex; align-items: center; gap: 8px; }
 .elog-toggle { font-size: 0.75rem; color: var(--ink-dim); text-decoration: underline; text-underline-offset: 3px; }
 .elog-chev { color: var(--ink-dim); transition: transform 0.2s ease; }
 .elog-chev.open { transform: rotate(180deg); }

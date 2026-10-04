@@ -33,10 +33,6 @@
   border-radius: var(--r-sm);
 }
 
-.navbar-logo {
-  flex: none;
-}
-
 .navbar-title {
   white-space: nowrap;
 }
@@ -147,11 +143,11 @@
   }
 
   .navbar-link {
-    padding: 6px 8px;
+    padding: 6px 6px;
   }
 
   .navbar-quiz {
-    padding: 0 10px;
-    margin-left: 4px;
+    padding: 0 8px;
+    margin-left: 2px;
   }
 }

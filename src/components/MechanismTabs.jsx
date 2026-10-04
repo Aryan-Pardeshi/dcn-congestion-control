@@ -115,7 +115,6 @@ export default function MechanismTabs() {
               ))}
             </ol>
             <div className="mono mech-formula">{m.formula}</div>
-            <pre className="mono mech-pseudo">{m.pseudocode}</pre>
             <div className="mech-proscons">
               <div className="mech-pros">
                 <h4>Strengths</h4>

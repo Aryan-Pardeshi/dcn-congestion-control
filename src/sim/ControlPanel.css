@@ -84,15 +84,10 @@
 .cat {
   --c: var(--ink-faint);
   flex: none;
-  padding: 1px 7px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
-  background: color-mix(in srgb, var(--c) 9%, transparent);
   color: var(--c);
-  font-size: 0.625rem;
-  font-weight: 500;
+  font-size: 0.6875rem;
   line-height: 1.6;
-  text-align: center;
+  text-align: right;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

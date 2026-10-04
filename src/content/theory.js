@@ -54,43 +54,14 @@ export const theoryIntro = [
   {
     heading: 'What is congestion?',
     body: [
-      'Congestion happens when the traffic offered to some part of the network exceeds what that part can carry. Router buffers fill up, packets wait longer in queues, and eventually packets have to be dropped.',
-      'As load keeps rising, performance falls: delay grows, loss grows, and retransmitted packets add still more load. Beyond a point the useful delivered throughput actually drops even though offered load rises. This is called congestion collapse, because much of the capacity is spent carrying packets that will be dropped or duplicated.',
-      'Adding ever more buffer memory does not fix congestion. Queued packets eventually time out at the sender and are retransmitted, so the network ends up storing duplicates. This observation is attributed to Nagle: unbounded buffers only turn loss into ever longer delay.',
+      'Congestion happens when the traffic offered to part of the network exceeds what it can carry. Router buffers fill, delay grows and packets are dropped. Retransmissions then add even more load, which can lead to congestion collapse.',
     ],
   },
   {
-    heading: 'Causes',
+    heading: 'Open loop vs closed loop',
     body: [
-      'Bursty traffic is a common cause: senders are quiet most of the time and then emit a burst that briefly exceeds link capacity.',
-      'Many inputs converging on one output also cause congestion, for example three 100 Mbps LANs feeding a single 10 Mbps WAN link.',
-      'Slow links or slow router processors cannot drain queues as fast as packets arrive.',
-      'Insufficient buffers mean bursts overflow the queue; retransmissions after loss then raise the offered load further and deepen the problem.',
-    ],
-  },
-  {
-    heading: 'Congestion control vs flow control',
-    body: [
-      'Congestion control is a global issue: it is about making sure the network as a whole can carry the traffic offered to it. It may involve many senders, routers and links at once.',
-      'Flow control is point-to-point: it matches one sender to one receiver so a fast sender does not overwhelm a slow receiver buffer. Receiver buffer fullness is a flow control matter, not congestion.',
-    ],
-  },
-  {
-    heading: 'Open-loop and closed-loop approaches',
-    body: [
-      'Open-loop approaches try to prevent congestion by good design and admission decisions made without looking at the current network state. Leaky bucket and token bucket traffic shaping are open-loop: they regulate traffic where it enters the network.',
-      'Closed-loop approaches monitor the network, feed information back to the senders, and adjust behaviour. Choke packets are closed-loop: the router detects congestion and signals the source to slow down.',
-      'Active queue management works inside the router queue and acts before the buffer is full. RED is the classic example: it drops or marks packets early and probabilistically to keep the average queue small.',
-    ],
-  },
-  {
-    heading: 'Approaches by time scale',
-    body: [
-      'Network provisioning: install enough capacity for the expected load, with spare headroom for growth.',
-      'Traffic-aware routing: route around hotspots by adapting paths to the current load.',
-      'Admission control: refuse or defer new sessions when the network is already heavily loaded.',
-      'Traffic throttling: ask senders to reduce their rate when congestion is detected.',
-      'Load shedding: when overload is unavoidable, drop packets selectively so the rest of the traffic still gets through.',
+      'Open-loop control prevents congestion by regulating traffic at the network entry, without looking at the current network state. Leaky bucket and token bucket do this.',
+      'Closed-loop control feeds congestion information back to the senders so they can slow down. Choke packets do this. Active queue management (RED) works inside the router queue and drops packets early.',
     ],
   },
 ];
@@ -105,24 +76,18 @@ export const mechanisms = [
     summary:
       'A bucket of size B accepts arriving packets and drains at a constant rate r. It converts bursty input into a smooth constant-rate stream, discarding arrivals when the bucket is full.',
     howItWorks: [
-      'Each arriving packet is placed into a bucket that holds at most B packets.',
-      'The bucket drains at a constant rate of r packets per tick, regardless of how bursty the arrivals are.',
-      'If a packet arrives while the bucket is full, it is discarded.',
-      'The output stream therefore has a fixed rate, and bursts are clipped at the entry.',
-      'Smoothing protects the downstream bottleneck link from sudden bursts.',
+      'Arriving packets go into a bucket of size B.',
+      'The bucket drains at a constant rate r, however bursty the input.',
+      'If the bucket is full, new packets are dropped.',
     ],
     formula: 'Output rate = r packets/tick (constant), bucket size = B',
-    pseudocode:
-      'bucket = empty, capacity B\non each packet arrival:\n  if bucket not full:\n    add packet to bucket\n  else:\n    discard packet\non each tick:\n  if bucket not empty:\n    send up to r packets',
     pros: [
-      'Produces a smooth and predictable output rate.',
-      'Simple to understand and implement.',
-      'Strictly bounds how bursty the admitted traffic can be.',
+      'Smooth, predictable output rate.',
+      'Simple to implement.',
     ],
     cons: [
-      'Rigid: cannot send faster during bursts even when the network is idle.',
-      'Idle bandwidth cannot be saved for later use.',
-      'Drops packets when the bucket overflows, even if the network itself is idle.',
+      'Rigid: cannot use idle bandwidth for bursts.',
+      'Drops packets on overflow.',
     ],
     simParams: [
       { key: 'bucketSize', label: 'Bucket size B', meaning: 'Maximum packets the bucket can hold' },
@@ -138,24 +103,18 @@ export const mechanisms = [
     summary:
       'Tokens accumulate at rate r up to a capacity C, and each packet needs one token to be sent. Idle periods save up permission so bounded bursts can pass at once, while the long-term rate stays controlled.',
     howItWorks: [
-      'Tokens are generated at rate r per tick into a bucket of capacity C.',
-      'Each packet needs one token before it can be sent.',
-      'If tokens are available, a burst of up to C packets can be sent immediately.',
-      'If no token is available, packets wait in a queue instead of being sent.',
-      'Packets are lost only if that waiting queue itself overflows.',
-      'Maximum burst duration is S = C / (M - r), where M is the maximum output rate.',
+      'Tokens are added at rate r, up to capacity C.',
+      'Each packet needs one token to be sent.',
+      'Saved tokens let a burst of up to C packets pass at once; other packets wait in a queue.',
     ],
     formula: 'Token rate = r tokens/tick, bucket capacity = C, burst duration S = C / (M - r)',
-    pseudocode:
-      'tokens = C (start full)\non each tick:\n  tokens = min(C, tokens + r)\non each packet arrival:\n  if tokens >= 1:\n    tokens = tokens - 1\n    send packet\n  else:\n    place packet in waiting queue',
     pros: [
-      'Allows bounded bursts instead of forcing a rigid rate.',
-      'Saves up permission while idle for later bursts.',
-      'More flexible than the leaky bucket for bursty applications.',
+      'Allows bounded bursts.',
+      'More flexible than leaky bucket.',
     ],
     cons: [
-      'Bursts can still momentarily load the network.',
-      'Needs careful tuning of the token rate r and capacity C.',
+      'Bursts can still load the network.',
+      'Needs tuning of r and C.',
     ],
     simParams: [
       { key: 'tokenRate', label: 'Token rate r', meaning: 'Tokens generated per tick' },
@@ -172,25 +131,18 @@ export const mechanisms = [
     summary:
       'The router watches its queue and sends a choke packet to the source when congestion is detected. The source cuts its rate and recovers gradually, so load is reduced at its origin.',
     howItWorks: [
-      'Router R1 monitors its output queue length or link utilisation.',
-      'When the queue passes a threshold, R1 sends a choke packet back to the source of the arriving packet.',
-      'On receiving a choke, the source reduces its sending rate by a fraction, for example 50 percent.',
-      'Further chokes are ignored for a short hold interval to avoid overreacting.',
-      'If no more chokes arrive, the source increases its rate gradually back towards normal.',
-      'A hop-by-hop variant applies the same signal at each router along the path (backpressure).',
+      'R1 watches its output queue.',
+      'Above the threshold, R1 sends a choke packet to the source.',
+      'The source cuts its rate (for example by 50%), then recovers gradually.',
     ],
     formula: 'On choke: rate = rate x reduceFactor; else rate = rate + recoveryStep per tick',
-    pseudocode:
-      'router: if queue length > threshold:\n  send choke packet to source\nsource on choke:\n  rate = rate x reduceFactor\n  ignore chokes for holdTicks\nsource each tick without choke:\n  rate = rate + recoveryStep',
     pros: [
-      'Reacts to actual measured congestion in the router.',
-      'Reduces load at the source, so wasted transit capacity is saved.',
-      'Simple to add: only congested routers send extra packets. (ECN is a related idea that marks packets instead of sending a separate one.)',
+      'Reacts to measured congestion.',
+      'Reduces load at the source.',
     ],
     cons: [
-      'Feedback arrives late on long paths, so the source reacts slowly.',
-      'Choke packets add extra control traffic exactly when the network is busy.',
-      'Only works if sources obey the signal and slow down.',
+      'Feedback is delayed on long paths.',
+      'Needs sources to obey the signal.',
     ],
     simParams: [
       { key: 'threshold', label: 'Queue threshold', meaning: 'Queue length that triggers a choke packet' },
@@ -208,25 +160,18 @@ export const mechanisms = [
     summary:
       'RED keeps an average queue length and drops or marks packets early with a probability that grows with that average. Early random drops warn senders before the buffer fills and avoid global synchronisation.',
     howItWorks: [
-      'The router maintains an exponentially weighted moving average of the queue length.',
-      'If the average is below minTh, arriving packets are enqueued normally.',
-      'If the average is between minTh and maxTh, arrivals are dropped (or marked) with probability p that rises linearly with the average.',
-      'If the average reaches maxTh, all arriving packets are dropped.',
-      'Early random drops signal TCP-like senders to slow down before the queue is full.',
-      'Randomness desynchronises senders so they do not all back off and resume together.',
+      'The router keeps an average queue length.',
+      'Below minTh: keep all packets. Between minTh and maxTh: drop with a probability that rises with the average.',
+      'At maxTh or above: drop all arrivals.',
     ],
     formula: 'avg = (1 - w) x avg + w x q; p = maxP x (avg - minTh) / (maxTh - minTh)',
-    pseudocode:
-      'avg = 0\non each arrival with queue length q:\n  avg = (1 - w) x avg + w x q\n  if avg < minTh:\n    enqueue packet\n  else if avg < maxTh:\n    drop with probability p\n  else:\n    drop packet',
     pros: [
-      'Keeps the average queue and queuing delay low.',
-      'Avoids global synchronisation and lock-out of bursty flows.',
-      'Absorbs short bursts while still signalling persistent overload early.',
+      'Keeps average queue and delay low.',
+      'Avoids global synchronisation.',
     ],
     cons: [
-      'Parameters (minTh, maxTh, maxP, w) are hard to tune.',
-      'Drops packets even when the buffer still has free space.',
-      'Benefit depends on sources reacting to loss, as TCP does.',
+      'Parameters are hard to tune.',
+      'Drops packets before the buffer is full.',
     ],
     simParams: [
       { key: 'minTh', label: 'Minimum threshold', meaning: 'Average queue below which all packets are kept' },
@@ -238,48 +183,13 @@ export const mechanisms = [
 ];
 
 export const comparison = {
-  columns: ['Mechanism', 'Category', 'Loop', 'Acts at', 'Burst handling', 'Main drawback'],
+  columns: ['Mechanism', 'Category', 'Acts at', 'Burst handling'],
   rows: [
-    [
-      'No control (FIFO tail drop)',
-      'Baseline',
-      '—',
-      'Router queue',
-      'Absorbs until buffer full, then drops everything',
-      'Large delay, heavy loss, global synchronisation',
-    ],
-    [
-      'Leaky bucket',
-      'Traffic shaping',
-      'Open loop',
-      'Network entry',
-      'Clips bursts to a constant rate',
-      'Wastes capacity when bursts could be served',
-    ],
-    [
-      'Token bucket',
-      'Traffic shaping',
-      'Open loop',
-      'Network entry',
-      'Admits bounded bursts up to bucket capacity',
-      'Bursts can still briefly load the network',
-    ],
-    [
-      'Choke packet',
-      'Feedback congestion control',
-      'Closed loop',
-      'Router signals source',
-      'Bursts admitted, then source rate is cut',
-      'Feedback delay on long paths',
-    ],
-    [
-      'RED',
-      'Active queue management',
-      'Router queue (AQM)',
-      'Inside router queue',
-      'Absorbs short bursts, drops early on persistent load',
-      'Hard to tune; drops before buffer is full',
-    ],
+    ['No control (FIFO tail drop)', 'Baseline', 'Router queue', 'Absorbs until buffer full, then drops'],
+    ['Leaky bucket', 'Traffic shaping', 'Network entry', 'Clips bursts to a constant rate'],
+    ['Token bucket', 'Traffic shaping', 'Network entry', 'Admits bounded bursts'],
+    ['Choke packet', 'Feedback congestion control', 'Router signals source', 'Admits bursts, then cuts source rate'],
+    ['RED', 'Active queue management', 'Inside router queue', 'Absorbs short bursts, drops early on persistent load'],
   ],
 };
 

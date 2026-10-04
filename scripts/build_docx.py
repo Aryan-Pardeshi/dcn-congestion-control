@@ -208,8 +208,6 @@ def main():
         fr = p.add_run(m["formula"])
         fr.font.name = "Consolas"
         fr.bold = False
-        para(doc, "Pseudocode:", bold=True)
-        code_block(doc, m["pseudocode"])
         para(doc, "Advantages:", bold=True)
         bullets(doc, m["pros"])
         para(doc, "Limitations:", bold=True)

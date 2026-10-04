@@ -10,20 +10,6 @@ const LINKS = [
   { to: '/simulator', label: 'Simulator' },
 ]
 
-function LogoMark() {
-  return (
-    <svg className="navbar-logo" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="0.5" y="0.5" width="23" height="23" rx="6" fill="var(--ink)" />
-      <g stroke="var(--bg)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 7.5h4.5L16 12" />
-        <path d="M6 12h4.5" />
-        <path d="M6 16.5h4.5L16 12" />
-      </g>
-      <circle cx="17.5" cy="12" r="1.8" fill="var(--flow)" />
-    </svg>
-  )
-}
-
 export default function Navbar() {
   const { openQuiz } = useQuiz()
   const [scrolled, setScrolled] = useState(false)
@@ -43,7 +29,6 @@ export default function Navbar() {
     <header className={scrolled ? 'navbar is-scrolled' : 'navbar'}>
       <div className="wrap navbar-inner">
         <Link className="navbar-brand" to="/" aria-label="Congestion Control Lab home">
-          <LogoMark />
           <span className="navbar-title">Congestion Control Lab</span>
         </Link>
         <nav className="navbar-links" aria-label="Primary" onMouseLeave={() => setHover(null)}>

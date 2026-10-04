@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import Footer from '../components/Footer'
 import Reveal, { Stagger, StaggerItem } from '../components/Reveal'
-import HeroTopology from '../components/HeroTopology'
+import CongestionDemo from '../components/CongestionDemo'
 import NetworkDiagram from '../components/NetworkDiagram'
 import MechanismTabs from '../components/MechanismTabs'
 import { useQuiz } from '../components/QuizContext'
@@ -22,7 +22,7 @@ const SECTIONS = [
   { id: 'aim', num: '01', label: 'Aim' },
   { id: 'problem', num: '02', label: 'Problem statement' },
   { id: 'requirements', num: '03', label: 'Network requirements' },
-  { id: 'resources', num: '04', label: 'Resources' },
+  { id: 'resources', num: '04', label: 'References' },
   { id: 'theory', num: '05', label: 'Theory' },
   { id: 'design', num: '06', label: 'Network design' },
   { id: 'procedure', num: '07', label: 'Procedure' },
@@ -105,39 +105,41 @@ export default function Landing() {
         <div className="grid-bg" aria-hidden="true" />
         <div className="glow-bg hero-glow" aria-hidden="true" />
         <div className="wrap hero-inner">
-          <h1 id="hero-title" className="hero-title" aria-label="Congestion control algorithms">
-            {HERO_WORDS.map((w, i) => (
-              <motion.span
-                key={w}
-                className="hero-word gradient-text"
-                aria-hidden="true"
-                {...(reduce
-                  ? {}
-                  : {
-                      initial: { opacity: 0, y: 28, filter: 'blur(14px)' },
-                      animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
-                      transition: { duration: 0.9, ease: EASE, delay: 0.1 + i * 0.1 },
-                    })}
-              >
-                {w}
-              </motion.span>
-            ))}
-          </h1>
-          <motion.p className="hero-lede" {...heroMotion(0.5)}>
-            Read the theory, study the campus network design, then run a live
-            simulation of leaky bucket, token bucket, choke packets and RED on
-            a congested campus router.
-          </motion.p>
-          <motion.div className="hero-actions" {...heroMotion(0.62)}>
-            <Link className="btn btn-lg" to="/simulator">
-              Open the simulator
-            </Link>
-            <button type="button" className="btn-ghost btn-lg" onClick={openQuiz}>
-              Take the quiz
-            </button>
-          </motion.div>
+          <div className="hero-copy">
+            <h1 id="hero-title" className="hero-title" aria-label="Congestion control algorithms">
+              {HERO_WORDS.map((w, i) => (
+                <motion.span
+                  key={w}
+                  className="hero-word gradient-text"
+                  aria-hidden="true"
+                  {...(reduce
+                    ? {}
+                    : {
+                        initial: { opacity: 0, y: 28, filter: 'blur(14px)' },
+                        animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+                        transition: { duration: 0.9, ease: EASE, delay: 0.1 + i * 0.1 },
+                      })}
+                >
+                  {w}
+                </motion.span>
+              ))}
+            </h1>
+            <motion.p className="hero-lede" {...heroMotion(0.5)}>
+              Read the theory, study the campus network design, then run a live
+              simulation of leaky bucket, token bucket, choke packets and RED on
+              a congested campus router.
+            </motion.p>
+            <motion.div className="hero-actions" {...heroMotion(0.62)}>
+              <Link className="btn btn-lg" to="/simulator">
+                Open the simulator
+              </Link>
+              <button type="button" className="btn-ghost btn-lg" onClick={openQuiz}>
+                Take the quiz
+              </button>
+            </motion.div>
+          </div>
           <motion.div className="hero-visual" {...heroMotion(0.8, 40)}>
-            <HeroTopology />
+            <CongestionDemo />
           </motion.div>
         </div>
       </section>
@@ -203,26 +205,9 @@ export default function Landing() {
               </Stagger>
             </Section>
 
-            <Section id="resources" num="04" title="Resources">
+            <Section id="resources" num="04" title="References">
               <Stagger className="resource-cols" stagger={0.08}>
-                <StaggerItem className="resource-card spot">
-                  <h3>Hardware</h3>
-                  <ul className="plain-list">
-                    {resources.hardware.map((h) => (
-                      <li key={h}>{h}</li>
-                    ))}
-                  </ul>
-                </StaggerItem>
-                <StaggerItem className="resource-card spot">
-                  <h3>Software</h3>
-                  <ul className="plain-list">
-                    {resources.software.map((s) => (
-                      <li key={s}>{s}</li>
-                    ))}
-                  </ul>
-                </StaggerItem>
                 <StaggerItem className="resource-card resource-wide spot">
-                  <h3>References</h3>
                   <ol className="ref-list">
                     {resources.references.map((r) => (
                       <li key={r.slice(0, 32)}>{r}</li>

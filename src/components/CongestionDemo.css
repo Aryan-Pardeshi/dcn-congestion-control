@@ -1,0 +1,163 @@
+.cdemo {
+  position: relative;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-xl);
+  background: var(--bg);
+  overflow: hidden;
+  box-shadow: var(--shadow), 0 40px 120px -40px var(--glow);
+  text-align: left;
+}
+
+.cdemo-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 42px;
+  padding: 0 16px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.cdemo-dots {
+  display: inline-flex;
+  gap: 7px;
+}
+
+.cdemo-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+.cdemo-title {
+  flex: 1;
+  min-width: 0;
+  margin-right: 50px; /* optical centring against the dots */
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cdemo-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2.3 / 1;
+}
+
+.cdemo-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.cdemo-stats {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  display: flex;
+  gap: 22px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.cdemo-stats dt {
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.cdemo-stats dd {
+  margin: 2px 0 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cdemo-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-2);
+}
+
+.cdemo-modes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--bg);
+}
+
+.cdemo-mode {
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  background: none;
+  color: var(--ink-dim);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.cdemo-mode:hover {
+  color: var(--ink);
+}
+
+.cdemo-mode.is-active {
+  color: var(--ink);
+  background: var(--bg-3);
+  border-color: var(--line-strong);
+}
+
+.cdemo-mode:focus-visible {
+  outline: 2px solid var(--flow);
+  outline-offset: 2px;
+}
+
+.cdemo-desc {
+  margin: 0;
+  min-height: 2.6em;
+  max-width: 60ch;
+  text-align: center;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ink-dim);
+}
+
+@media (max-width: 560px) {
+  .cdemo-stage {
+    aspect-ratio: 1.35 / 1;
+  }
+  .cdemo-stats {
+    top: 10px;
+    left: 12px;
+    gap: 16px;
+  }
+  .cdemo-stats dd {
+    font-size: 1rem;
+  }
+  .cdemo-title {
+    text-align: left;
+    margin-right: 0;
+  }
+  .cdemo-mode {
+    padding: 6px 9px;
+    font-size: 0.75rem;
+  }
+}
